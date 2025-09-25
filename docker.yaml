@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: dota_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: dota
+      POSTGRES_PASSWORD: dota
+      POSTGRES_DB: dota
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
