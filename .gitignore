@@ -1,0 +1,22 @@
+# Go binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary
+*.test
+*.out
+
+# Vendor folder
+/vendor/
+
+# IDE/editor configs
+.idea/
+.vscode/
+*.swp
+
+# Sensitive files
+.env
+tokens.json
