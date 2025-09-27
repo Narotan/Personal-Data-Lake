@@ -7,6 +7,7 @@ import (
 
 	"DataLake/auth"
 	"DataLake/server"
+	"DataLake/wakatime"
 
 	"github.com/joho/godotenv"
 )
@@ -36,5 +37,7 @@ func main() {
 	fullURL := auth.BuildAuthRequest(cfg)
 
 	fmt.Println(fullURL)
+	wakatime.FetchSummaries()
 	server.RunServer(cfg)
+
 }
