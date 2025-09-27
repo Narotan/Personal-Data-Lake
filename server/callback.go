@@ -14,15 +14,24 @@ func MakeCallbackHandler(cfg auth.Config) http.HandlerFunc {
 			return
 		}
 
-		fmt.Println("Received code:", code)
-
 		token, err := auth.ExchangeCodeForToken(cfg, code)
 		if err != nil {
 			http.Error(w, "Failed to exchange code for token: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		fmt.Printf("AccessToken: %s\nRefreshToken: %s\nTokenType: %s\nUID: %s\nExpiresAt: %s\nScope:%s\n",
-			token.AccessToken, token.RefreshToken, token.TokenType, token.UID, token.ExpiresAt, token.Scope)
+		fmt.Printf("AccessToken: %s\n", token.AccessToken)
+
+		err = auth.SaveTokens(auth.Tokens{
+			AccessToken:  token.AccessToken,
+			RefreshToken: token.RefreshToken,
+			ExpiresAt:    token.ExpiresAt,
+		})
+		if err != nil {
+			fmt.Println("Failed to save token:", err)
+		} else {
+			fmt.Println("Token saved to token.json")
+		}
+
 	}
 }
