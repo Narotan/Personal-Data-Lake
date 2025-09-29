@@ -3,6 +3,7 @@ package wakatime
 import (
 	"DataLake/auth"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 )
@@ -39,5 +40,6 @@ func FetchSummaries() Summary {
 
 	summary := respData.Data
 
+	fmt.Println(summary)
 	return summary
 }
