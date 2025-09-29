@@ -1,0 +1,9 @@
+version: "2"
+sql:
+  - schema: "db/schema"         # где лежат миграции
+    queries: "db/queries"       # где лежат SQL-запросы
+    engine: "postgresql"
+    gen:
+      go:
+        package: "wakatime_db"     # пакет внутри internal
+        out: "internal/db/wakatime"
