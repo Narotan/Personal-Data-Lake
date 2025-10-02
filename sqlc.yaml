@@ -1,9 +1,12 @@
 version: "2"
-sql:
-  - schema: "db/schema"         # где лежат миграции
-    queries: "db/queries"       # где лежат SQL-запросы
-    engine: "postgresql"
-    gen:
-      go:
-        package: "wakatime_db"     # пакет внутри internal
-        out: "internal/db/wakatime"
+packages:
+  - name: wakatime_db     
+    path: "internal/db/wakatime"
+    engine: postgresql
+    schema: "db/schema.sql"     
+    queries: "db/queries/"       
+    go: 
+      package: wakatime_db
+      emit_interface: true        
+      overrides:
+        - go_type: "*pgxpool.Pool"
