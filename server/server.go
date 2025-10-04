@@ -8,18 +8,18 @@ import (
 )
 
 type Server struct {
-	cfg     auth.Config
-	queries *wakatime_db.Queries
-	logger  *log.Logger
-	mux     *http.ServeMux
+	cfg    auth.Config
+	store  *wakatime_db.Store
+	logger *log.Logger
+	mux    *http.ServeMux
 }
 
-func NewServer(cfg auth.Config, queries *wakatime_db.Queries, logger *log.Logger) *Server {
+func NewServer(cfg auth.Config, store *wakatime_db.Store, logger *log.Logger) *Server {
 	s := &Server{
-		cfg:     cfg,
-		queries: queries,
-		logger:  logger,
-		mux:     http.NewServeMux(),
+		cfg:    cfg,
+		store:  store,
+		logger: logger,
+		mux:    http.NewServeMux(),
 	}
 
 	s.routes()
@@ -36,7 +36,11 @@ func (s *Server) Cfg() auth.Config {
 }
 
 func (s *Server) Queries() *wakatime_db.Queries {
-	return s.queries
+	return s.store.Queries
+}
+
+func (s *Server) Store() *wakatime_db.Store {
+	return s.store
 }
 
 func (s *Server) Logger() *log.Logger {
