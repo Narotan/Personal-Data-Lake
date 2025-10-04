@@ -31,9 +31,8 @@ func main() {
 		log.Fatal(err)
 	}
 	defer db.Pool.Close()
-	queries := wakatime_db.New(db.Pool) // используем глобальную переменную db.Pool
+	queries := wakatime_db.New(db.Pool)
 
-	// Генерируем ссылку для авторизации
 	fullURL := auth.BuildAuthRequest(cfg)
 	log.Println("Auth URL:", fullURL)
 
