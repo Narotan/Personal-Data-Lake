@@ -14,38 +14,39 @@ import (
 )
 
 func main() {
-	// Загружаем .env
 	if err := godotenv.Load(); err != nil {
 		log.Fatalf("Error loading .env file: %v", err)
 	}
 
-	// Создаём конфиг для OAuth
 	cfg := auth.Config{
 		ClientID:     os.Getenv("CLIENT_ID"),
 		RedirectURI:  os.Getenv("REDIRECT_URI"),
 		ClientSecret: os.Getenv("CLIENT_SECRET"),
 	}
 
-	// Подключение к базе данных
-	if err := db.Connect(); err != nil {
+	err := db.Connect()
+	if err != nil {
 		log.Fatal(err)
 	}
-	defer db.Pool.Close()
-	queries := wakatime_db.New(db.Pool)
+	store := wakatime_db.NewStore(db.Pool)
 
 	fullURL := auth.BuildAuthRequest(cfg)
 	log.Println("Auth URL:", fullURL)
 
 	go func() {
-		summary := wakatime.FetchSummaries()
-		log.Printf("Fetched summary: %+v\n", summary)
+		userID := "00000000-0000-0000-0000-000000000001"
+
+		summary := wakatime.FetchSummaries(store)
+		if err := wakatime.SaveSummaries(store, summary, userID); err != nil {
+			log.Printf("error saving summaries: %v", err)
+		} else {
+			log.Printf("successfully fetched and saved summary: %+v\n", summary)
+		}
 	}()
 
 	logger := log.New(os.Stdout, "[DataLake] ", log.LstdFlags)
+	srv := server.NewServer(cfg, store, logger)
 
-	srv := server.NewServer(cfg, queries, logger)
-
-	// заупуск сервер
 	if err := srv.Run(); err != nil {
 		log.Fatal(err)
 	}
