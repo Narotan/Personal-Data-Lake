@@ -5,27 +5,24 @@
 package wakatime_db
 
 import (
-	"database/sql"
-	"time"
-
-	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type User struct {
-	ID        uuid.UUID
+	ID        pgtype.UUID
 	Username  string
-	Email     sql.NullString
-	CreatedAt sql.NullTime
+	Email     pgtype.Text
+	CreatedAt pgtype.Timestamptz
 }
 
 type WakatimeDay struct {
 	ID           int32
-	UserID       uuid.UUID
-	Date         time.Time
+	UserID       pgtype.UUID
+	Date         pgtype.Date
 	TotalSeconds float64
-	Text         sql.NullString
-	CreatedAt    sql.NullTime
-	UpdatedAt    sql.NullTime
+	Text         pgtype.Text
+	CreatedAt    pgtype.Timestamptz
+	UpdatedAt    pgtype.Timestamptz
 }
 
 type WakatimeDependency struct {
@@ -33,9 +30,9 @@ type WakatimeDependency struct {
 	DayID        int32
 	Name         string
 	TotalSeconds float64
-	Percent      sql.NullFloat64
-	Text         sql.NullString
-	CreatedAt    sql.NullTime
+	Percent      pgtype.Float8
+	Text         pgtype.Text
+	CreatedAt    pgtype.Timestamptz
 }
 
 type WakatimeEditor struct {
@@ -43,9 +40,9 @@ type WakatimeEditor struct {
 	DayID        int32
 	Name         string
 	TotalSeconds float64
-	Percent      sql.NullFloat64
-	Text         sql.NullString
-	CreatedAt    sql.NullTime
+	Percent      pgtype.Float8
+	Text         pgtype.Text
+	CreatedAt    pgtype.Timestamptz
 }
 
 type WakatimeLanguage struct {
@@ -53,9 +50,9 @@ type WakatimeLanguage struct {
 	DayID        int32
 	Name         string
 	TotalSeconds float64
-	Percent      sql.NullFloat64
-	Text         sql.NullString
-	CreatedAt    sql.NullTime
+	Percent      pgtype.Float8
+	Text         pgtype.Text
+	CreatedAt    pgtype.Timestamptz
 }
 
 type WakatimeMachine struct {
@@ -63,9 +60,9 @@ type WakatimeMachine struct {
 	DayID        int32
 	Name         string
 	TotalSeconds float64
-	Percent      sql.NullFloat64
-	Text         sql.NullString
-	CreatedAt    sql.NullTime
+	Percent      pgtype.Float8
+	Text         pgtype.Text
+	CreatedAt    pgtype.Timestamptz
 }
 
 type WakatimeO struct {
@@ -73,9 +70,9 @@ type WakatimeO struct {
 	DayID        int32
 	Name         string
 	TotalSeconds float64
-	Percent      sql.NullFloat64
-	Text         sql.NullString
-	CreatedAt    sql.NullTime
+	Percent      pgtype.Float8
+	Text         pgtype.Text
+	CreatedAt    pgtype.Timestamptz
 }
 
 type WakatimeProject struct {
@@ -83,19 +80,19 @@ type WakatimeProject struct {
 	DayID        int32
 	Name         string
 	TotalSeconds float64
-	Percent      sql.NullFloat64
-	Text         sql.NullString
-	CreatedAt    sql.NullTime
+	Percent      pgtype.Float8
+	Text         pgtype.Text
+	CreatedAt    pgtype.Timestamptz
 }
 
 type WakatimeSummary struct {
 	ID           int32
-	UserID       uuid.UUID
-	StartTime    time.Time
-	EndTime      time.Time
-	Range        sql.NullString
-	TotalSeconds sql.NullFloat64
-	DailyAverage sql.NullFloat64
-	BestDayID    sql.NullInt32
-	CreatedAt    sql.NullTime
+	UserID       pgtype.UUID
+	StartTime    pgtype.Timestamptz
+	EndTime      pgtype.Timestamptz
+	Range        pgtype.Text
+	TotalSeconds pgtype.Float8
+	DailyAverage pgtype.Float8
+	BestDayID    pgtype.Int4
+	CreatedAt    pgtype.Timestamptz
 }

@@ -7,10 +7,8 @@ package wakatime_db
 
 import (
 	"context"
-	"database/sql"
-	"time"
 
-	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createDay = `-- name: CreateDay :one
@@ -21,15 +19,15 @@ RETURNING id, user_id, date, total_seconds, text, created_at, updated_at
 `
 
 type CreateDayParams struct {
-	UserID       uuid.UUID
-	Date         time.Time
+	UserID       pgtype.UUID
+	Date         pgtype.Date
 	TotalSeconds float64
-	Text         sql.NullString
+	Text         pgtype.Text
 }
 
 // Дни -------------------------------------------------------------------
 func (q *Queries) CreateDay(ctx context.Context, arg CreateDayParams) (WakatimeDay, error) {
-	row := q.db.QueryRowContext(ctx, createDay,
+	row := q.db.QueryRow(ctx, createDay,
 		arg.UserID,
 		arg.Date,
 		arg.TotalSeconds,
@@ -59,13 +57,13 @@ type CreateDependencyParams struct {
 	DayID        int32
 	Name         string
 	TotalSeconds float64
-	Percent      sql.NullFloat64
-	Text         sql.NullString
+	Percent      pgtype.Float8
+	Text         pgtype.Text
 }
 
 // Зависимости -------------------------------------------------------------------
 func (q *Queries) CreateDependency(ctx context.Context, arg CreateDependencyParams) (WakatimeDependency, error) {
-	row := q.db.QueryRowContext(ctx, createDependency,
+	row := q.db.QueryRow(ctx, createDependency,
 		arg.DayID,
 		arg.Name,
 		arg.TotalSeconds,
@@ -96,13 +94,13 @@ type CreateEditorParams struct {
 	DayID        int32
 	Name         string
 	TotalSeconds float64
-	Percent      sql.NullFloat64
-	Text         sql.NullString
+	Percent      pgtype.Float8
+	Text         pgtype.Text
 }
 
 // Редакторы -------------------------------------------------------------------
 func (q *Queries) CreateEditor(ctx context.Context, arg CreateEditorParams) (WakatimeEditor, error) {
-	row := q.db.QueryRowContext(ctx, createEditor,
+	row := q.db.QueryRow(ctx, createEditor,
 		arg.DayID,
 		arg.Name,
 		arg.TotalSeconds,
@@ -133,13 +131,13 @@ type CreateLanguageParams struct {
 	DayID        int32
 	Name         string
 	TotalSeconds float64
-	Percent      sql.NullFloat64
-	Text         sql.NullString
+	Percent      pgtype.Float8
+	Text         pgtype.Text
 }
 
 // Языки -------------------------------------------------------------------
 func (q *Queries) CreateLanguage(ctx context.Context, arg CreateLanguageParams) (WakatimeLanguage, error) {
-	row := q.db.QueryRowContext(ctx, createLanguage,
+	row := q.db.QueryRow(ctx, createLanguage,
 		arg.DayID,
 		arg.Name,
 		arg.TotalSeconds,
@@ -170,13 +168,13 @@ type CreateMachineParams struct {
 	DayID        int32
 	Name         string
 	TotalSeconds float64
-	Percent      sql.NullFloat64
-	Text         sql.NullString
+	Percent      pgtype.Float8
+	Text         pgtype.Text
 }
 
 // Машины -------------------------------------------------------------------
 func (q *Queries) CreateMachine(ctx context.Context, arg CreateMachineParams) (WakatimeMachine, error) {
-	row := q.db.QueryRowContext(ctx, createMachine,
+	row := q.db.QueryRow(ctx, createMachine,
 		arg.DayID,
 		arg.Name,
 		arg.TotalSeconds,
@@ -207,13 +205,13 @@ type CreateOSParams struct {
 	DayID        int32
 	Name         string
 	TotalSeconds float64
-	Percent      sql.NullFloat64
-	Text         sql.NullString
+	Percent      pgtype.Float8
+	Text         pgtype.Text
 }
 
 // ОС -------------------------------------------------------------------
 func (q *Queries) CreateOS(ctx context.Context, arg CreateOSParams) (WakatimeO, error) {
-	row := q.db.QueryRowContext(ctx, createOS,
+	row := q.db.QueryRow(ctx, createOS,
 		arg.DayID,
 		arg.Name,
 		arg.TotalSeconds,
@@ -244,13 +242,13 @@ type CreateProjectParams struct {
 	DayID        int32
 	Name         string
 	TotalSeconds float64
-	Percent      sql.NullFloat64
-	Text         sql.NullString
+	Percent      pgtype.Float8
+	Text         pgtype.Text
 }
 
 // Проекты -------------------------------------------------------------------
 func (q *Queries) CreateProject(ctx context.Context, arg CreateProjectParams) (WakatimeProject, error) {
-	row := q.db.QueryRowContext(ctx, createProject,
+	row := q.db.QueryRow(ctx, createProject,
 		arg.DayID,
 		arg.Name,
 		arg.TotalSeconds,
@@ -278,18 +276,18 @@ RETURNING id, user_id, start_time, end_time, range, total_seconds, daily_average
 `
 
 type CreateSummaryParams struct {
-	UserID       uuid.UUID
-	StartTime    time.Time
-	EndTime      time.Time
-	Range        sql.NullString
-	TotalSeconds sql.NullFloat64
-	DailyAverage sql.NullFloat64
-	BestDayID    sql.NullInt32
+	UserID       pgtype.UUID
+	StartTime    pgtype.Timestamptz
+	EndTime      pgtype.Timestamptz
+	Range        pgtype.Text
+	TotalSeconds pgtype.Float8
+	DailyAverage pgtype.Float8
+	BestDayID    pgtype.Int4
 }
 
 // Сводная статистика -------------------------------------------------------------------
 func (q *Queries) CreateSummary(ctx context.Context, arg CreateSummaryParams) (WakatimeSummary, error) {
-	row := q.db.QueryRowContext(ctx, createSummary,
+	row := q.db.QueryRow(ctx, createSummary,
 		arg.UserID,
 		arg.StartTime,
 		arg.EndTime,
@@ -318,7 +316,7 @@ DELETE FROM wakatime_days WHERE id = $1
 `
 
 func (q *Queries) DeleteDay(ctx context.Context, id int32) error {
-	_, err := q.db.ExecContext(ctx, deleteDay, id)
+	_, err := q.db.Exec(ctx, deleteDay, id)
 	return err
 }
 
@@ -327,7 +325,7 @@ DELETE FROM wakatime_dependencies WHERE id = $1
 `
 
 func (q *Queries) DeleteDependency(ctx context.Context, id int32) error {
-	_, err := q.db.ExecContext(ctx, deleteDependency, id)
+	_, err := q.db.Exec(ctx, deleteDependency, id)
 	return err
 }
 
@@ -336,7 +334,7 @@ DELETE FROM wakatime_editors WHERE id = $1
 `
 
 func (q *Queries) DeleteEditor(ctx context.Context, id int32) error {
-	_, err := q.db.ExecContext(ctx, deleteEditor, id)
+	_, err := q.db.Exec(ctx, deleteEditor, id)
 	return err
 }
 
@@ -345,7 +343,7 @@ DELETE FROM wakatime_languages WHERE id = $1
 `
 
 func (q *Queries) DeleteLanguage(ctx context.Context, id int32) error {
-	_, err := q.db.ExecContext(ctx, deleteLanguage, id)
+	_, err := q.db.Exec(ctx, deleteLanguage, id)
 	return err
 }
 
@@ -354,7 +352,7 @@ DELETE FROM wakatime_machines WHERE id = $1
 `
 
 func (q *Queries) DeleteMachine(ctx context.Context, id int32) error {
-	_, err := q.db.ExecContext(ctx, deleteMachine, id)
+	_, err := q.db.Exec(ctx, deleteMachine, id)
 	return err
 }
 
@@ -363,7 +361,7 @@ DELETE FROM wakatime_os WHERE id = $1
 `
 
 func (q *Queries) DeleteOS(ctx context.Context, id int32) error {
-	_, err := q.db.ExecContext(ctx, deleteOS, id)
+	_, err := q.db.Exec(ctx, deleteOS, id)
 	return err
 }
 
@@ -372,7 +370,7 @@ DELETE FROM wakatime_projects WHERE id = $1
 `
 
 func (q *Queries) DeleteProject(ctx context.Context, id int32) error {
-	_, err := q.db.ExecContext(ctx, deleteProject, id)
+	_, err := q.db.Exec(ctx, deleteProject, id)
 	return err
 }
 
@@ -381,7 +379,7 @@ DELETE FROM wakatime_summaries WHERE id = $1
 `
 
 func (q *Queries) DeleteSummary(ctx context.Context, id int32) error {
-	_, err := q.db.ExecContext(ctx, deleteSummary, id)
+	_, err := q.db.Exec(ctx, deleteSummary, id)
 	return err
 }
 
@@ -390,12 +388,12 @@ SELECT id, user_id, date, total_seconds, text, created_at, updated_at FROM wakat
 `
 
 type GetDayByDateParams struct {
-	UserID uuid.UUID
-	Date   time.Time
+	UserID pgtype.UUID
+	Date   pgtype.Date
 }
 
 func (q *Queries) GetDayByDate(ctx context.Context, arg GetDayByDateParams) (WakatimeDay, error) {
-	row := q.db.QueryRowContext(ctx, getDayByDate, arg.UserID, arg.Date)
+	row := q.db.QueryRow(ctx, getDayByDate, arg.UserID, arg.Date)
 	var i WakatimeDay
 	err := row.Scan(
 		&i.ID,
@@ -414,7 +412,7 @@ SELECT id, user_id, date, total_seconds, text, created_at, updated_at FROM wakat
 `
 
 func (q *Queries) GetDayByID(ctx context.Context, id int32) (WakatimeDay, error) {
-	row := q.db.QueryRowContext(ctx, getDayByID, id)
+	row := q.db.QueryRow(ctx, getDayByID, id)
 	var i WakatimeDay
 	err := row.Scan(
 		&i.ID,
@@ -433,7 +431,7 @@ SELECT id, day_id, name, total_seconds, percent, text, created_at FROM wakatime_
 `
 
 func (q *Queries) GetProjectByID(ctx context.Context, id int32) (WakatimeProject, error) {
-	row := q.db.QueryRowContext(ctx, getProjectByID, id)
+	row := q.db.QueryRow(ctx, getProjectByID, id)
 	var i WakatimeProject
 	err := row.Scan(
 		&i.ID,
@@ -452,7 +450,7 @@ SELECT id, user_id, start_time, end_time, range, total_seconds, daily_average, b
 `
 
 func (q *Queries) GetSummaryByID(ctx context.Context, id int32) (WakatimeSummary, error) {
-	row := q.db.QueryRowContext(ctx, getSummaryByID, id)
+	row := q.db.QueryRow(ctx, getSummaryByID, id)
 	var i WakatimeSummary
 	err := row.Scan(
 		&i.ID,
@@ -472,8 +470,8 @@ const listDaysByUser = `-- name: ListDaysByUser :many
 SELECT id, user_id, date, total_seconds, text, created_at, updated_at FROM wakatime_days WHERE user_id = $1 ORDER BY date DESC
 `
 
-func (q *Queries) ListDaysByUser(ctx context.Context, userID uuid.UUID) ([]WakatimeDay, error) {
-	rows, err := q.db.QueryContext(ctx, listDaysByUser, userID)
+func (q *Queries) ListDaysByUser(ctx context.Context, userID pgtype.UUID) ([]WakatimeDay, error) {
+	rows, err := q.db.Query(ctx, listDaysByUser, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -494,9 +492,6 @@ func (q *Queries) ListDaysByUser(ctx context.Context, userID uuid.UUID) ([]Wakat
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -508,7 +503,7 @@ SELECT id, day_id, name, total_seconds, percent, text, created_at FROM wakatime_
 `
 
 func (q *Queries) ListDependenciesByDay(ctx context.Context, dayID int32) ([]WakatimeDependency, error) {
-	rows, err := q.db.QueryContext(ctx, listDependenciesByDay, dayID)
+	rows, err := q.db.Query(ctx, listDependenciesByDay, dayID)
 	if err != nil {
 		return nil, err
 	}
@@ -529,9 +524,6 @@ func (q *Queries) ListDependenciesByDay(ctx context.Context, dayID int32) ([]Wak
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -543,7 +535,7 @@ SELECT id, day_id, name, total_seconds, percent, text, created_at FROM wakatime_
 `
 
 func (q *Queries) ListEditorsByDay(ctx context.Context, dayID int32) ([]WakatimeEditor, error) {
-	rows, err := q.db.QueryContext(ctx, listEditorsByDay, dayID)
+	rows, err := q.db.Query(ctx, listEditorsByDay, dayID)
 	if err != nil {
 		return nil, err
 	}
@@ -564,9 +556,6 @@ func (q *Queries) ListEditorsByDay(ctx context.Context, dayID int32) ([]Wakatime
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -578,7 +567,7 @@ SELECT id, day_id, name, total_seconds, percent, text, created_at FROM wakatime_
 `
 
 func (q *Queries) ListLanguagesByDay(ctx context.Context, dayID int32) ([]WakatimeLanguage, error) {
-	rows, err := q.db.QueryContext(ctx, listLanguagesByDay, dayID)
+	rows, err := q.db.Query(ctx, listLanguagesByDay, dayID)
 	if err != nil {
 		return nil, err
 	}
@@ -599,9 +588,6 @@ func (q *Queries) ListLanguagesByDay(ctx context.Context, dayID int32) ([]Wakati
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -613,7 +599,7 @@ SELECT id, day_id, name, total_seconds, percent, text, created_at FROM wakatime_
 `
 
 func (q *Queries) ListMachinesByDay(ctx context.Context, dayID int32) ([]WakatimeMachine, error) {
-	rows, err := q.db.QueryContext(ctx, listMachinesByDay, dayID)
+	rows, err := q.db.Query(ctx, listMachinesByDay, dayID)
 	if err != nil {
 		return nil, err
 	}
@@ -634,9 +620,6 @@ func (q *Queries) ListMachinesByDay(ctx context.Context, dayID int32) ([]Wakatim
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -648,7 +631,7 @@ SELECT id, day_id, name, total_seconds, percent, text, created_at FROM wakatime_
 `
 
 func (q *Queries) ListOSByDay(ctx context.Context, dayID int32) ([]WakatimeO, error) {
-	rows, err := q.db.QueryContext(ctx, listOSByDay, dayID)
+	rows, err := q.db.Query(ctx, listOSByDay, dayID)
 	if err != nil {
 		return nil, err
 	}
@@ -669,9 +652,6 @@ func (q *Queries) ListOSByDay(ctx context.Context, dayID int32) ([]WakatimeO, er
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -683,7 +663,7 @@ SELECT id, day_id, name, total_seconds, percent, text, created_at FROM wakatime_
 `
 
 func (q *Queries) ListProjectsByDay(ctx context.Context, dayID int32) ([]WakatimeProject, error) {
-	rows, err := q.db.QueryContext(ctx, listProjectsByDay, dayID)
+	rows, err := q.db.Query(ctx, listProjectsByDay, dayID)
 	if err != nil {
 		return nil, err
 	}
@@ -704,9 +684,6 @@ func (q *Queries) ListProjectsByDay(ctx context.Context, dayID int32) ([]Wakatim
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -717,8 +694,8 @@ const listSummariesByUser = `-- name: ListSummariesByUser :many
 SELECT id, user_id, start_time, end_time, range, total_seconds, daily_average, best_day_id, created_at FROM wakatime_summaries WHERE user_id = $1 ORDER BY start_time DESC
 `
 
-func (q *Queries) ListSummariesByUser(ctx context.Context, userID uuid.UUID) ([]WakatimeSummary, error) {
-	rows, err := q.db.QueryContext(ctx, listSummariesByUser, userID)
+func (q *Queries) ListSummariesByUser(ctx context.Context, userID pgtype.UUID) ([]WakatimeSummary, error) {
+	rows, err := q.db.Query(ctx, listSummariesByUser, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -741,9 +718,6 @@ func (q *Queries) ListSummariesByUser(ctx context.Context, userID uuid.UUID) ([]
 		}
 		items = append(items, i)
 	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
@@ -760,11 +734,11 @@ RETURNING id, user_id, date, total_seconds, text, created_at, updated_at
 type UpdateDayParams struct {
 	ID           int32
 	TotalSeconds float64
-	Text         sql.NullString
+	Text         pgtype.Text
 }
 
 func (q *Queries) UpdateDay(ctx context.Context, arg UpdateDayParams) (WakatimeDay, error) {
-	row := q.db.QueryRowContext(ctx, updateDay, arg.ID, arg.TotalSeconds, arg.Text)
+	row := q.db.QueryRow(ctx, updateDay, arg.ID, arg.TotalSeconds, arg.Text)
 	var i WakatimeDay
 	err := row.Scan(
 		&i.ID,
@@ -788,12 +762,12 @@ RETURNING id, day_id, name, total_seconds, percent, text, created_at
 type UpdateProjectParams struct {
 	ID           int32
 	TotalSeconds float64
-	Percent      sql.NullFloat64
-	Text         sql.NullString
+	Percent      pgtype.Float8
+	Text         pgtype.Text
 }
 
 func (q *Queries) UpdateProject(ctx context.Context, arg UpdateProjectParams) (WakatimeProject, error) {
-	row := q.db.QueryRowContext(ctx, updateProject,
+	row := q.db.QueryRow(ctx, updateProject,
 		arg.ID,
 		arg.TotalSeconds,
 		arg.Percent,
