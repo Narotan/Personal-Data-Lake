@@ -11,6 +11,7 @@ import (
 	"DataLake/wakatime"
 
 	"github.com/joho/godotenv"
+	uuid "github.com/satori/go.uuid"
 )
 
 func main() {
@@ -34,13 +35,20 @@ func main() {
 	log.Println("Auth URL:", fullURL)
 
 	go func() {
-		userID := "00000000-0000-0000-0000-000000000001"
+		userID := uuid.Must(uuid.FromString("00000000-0000-0000-0000-000000000001"))
 
-		summary := wakatime.FetchSummaries(store)
-		if err := wakatime.SaveSummaries(store, summary, userID); err != nil {
+		// FetchSummaries теперь не принимает store и возвращает массив дней + ошибку
+		dailySummaries, err := wakatime.FetchSummaries()
+		if err != nil {
+			log.Printf("error fetching summaries: %v", err)
+			return
+		}
+
+		// SaveSummaries теперь принимает массив дней
+		if err := wakatime.SaveSummaries(store, dailySummaries, userID); err != nil {
 			log.Printf("error saving summaries: %v", err)
 		} else {
-			log.Printf("successfully fetched and saved summary: %+v\n", summary)
+			log.Printf("successfully fetched and saved %d days\n", len(dailySummaries))
 		}
 	}()
 

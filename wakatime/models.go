@@ -86,3 +86,27 @@ type Summary struct {
 type SummaryResponse struct {
 	Data Summary `json:"data"`
 }
+
+// Структуры для /summaries endpoint (массив дней)
+type DailySummary struct {
+	GrandTotal struct {
+		TotalSeconds float64 `json:"total_seconds"`
+		Text         string  `json:"text"`
+	} `json:"grand_total"`
+	Projects     []Project         `json:"projects"`
+	Languages    []Language        `json:"languages"`
+	Editors      []Editor          `json:"editors"`
+	OS           []OperatingSystem `json:"operating_systems"`
+	Dependencies []Dependency      `json:"dependencies"`
+	Machines     []Machine         `json:"machines"`
+	Range        struct {
+		Date string `json:"date"` // YYYY-MM-DD
+		Text string `json:"text"`
+	} `json:"range"`
+}
+
+type SummariesResponse struct {
+	Data  []DailySummary `json:"data"`
+	Start string         `json:"start"`
+	End   string         `json:"end"`
+}

@@ -45,6 +45,9 @@ RETURNING *;
 -- name: DeleteProject :exec
 DELETE FROM wakatime_projects WHERE id = $1;
 
+-- name: DeleteProjectsByDay :exec
+DELETE FROM wakatime_projects WHERE day_id = $1;
+
 -- Языки -------------------------------------------------------------------
 
 -- name: CreateLanguage :one
@@ -57,6 +60,9 @@ SELECT * FROM wakatime_languages WHERE day_id = $1 ORDER BY total_seconds DESC;
 
 -- name: DeleteLanguage :exec
 DELETE FROM wakatime_languages WHERE id = $1;
+
+-- name: DeleteLanguagesByDay :exec
+DELETE FROM wakatime_languages WHERE day_id = $1;
 
 -- Редакторы -------------------------------------------------------------------
 
@@ -71,6 +77,9 @@ SELECT * FROM wakatime_editors WHERE day_id = $1 ORDER BY total_seconds DESC;
 -- name: DeleteEditor :exec
 DELETE FROM wakatime_editors WHERE id = $1;
 
+-- name: DeleteEditorsByDay :exec
+DELETE FROM wakatime_editors WHERE day_id = $1;
+
 -- ОС -------------------------------------------------------------------
 
 -- name: CreateOS :one
@@ -83,6 +92,9 @@ SELECT * FROM wakatime_os WHERE day_id = $1 ORDER BY total_seconds DESC;
 
 -- name: DeleteOS :exec
 DELETE FROM wakatime_os WHERE id = $1;
+
+-- name: DeleteOSByDay :exec
+DELETE FROM wakatime_os WHERE day_id = $1;
 
 -- Зависимости -------------------------------------------------------------------
 
@@ -97,6 +109,9 @@ SELECT * FROM wakatime_dependencies WHERE day_id = $1 ORDER BY total_seconds DES
 -- name: DeleteDependency :exec
 DELETE FROM wakatime_dependencies WHERE id = $1;
 
+-- name: DeleteDependenciesByDay :exec
+DELETE FROM wakatime_dependencies WHERE day_id = $1;
+
 -- Машины -------------------------------------------------------------------
 
 -- name: CreateMachine :one
@@ -109,6 +124,9 @@ SELECT * FROM wakatime_machines WHERE day_id = $1 ORDER BY total_seconds DESC;
 
 -- name: DeleteMachine :exec
 DELETE FROM wakatime_machines WHERE id = $1;
+
+-- name: DeleteMachinesByDay :exec
+DELETE FROM wakatime_machines WHERE day_id = $1;
 
 -- Сводная статистика -------------------------------------------------------------------
 
