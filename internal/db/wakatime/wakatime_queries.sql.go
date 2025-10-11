@@ -320,6 +320,15 @@ func (q *Queries) DeleteDay(ctx context.Context, id int32) error {
 	return err
 }
 
+const deleteDependenciesByDay = `-- name: DeleteDependenciesByDay :exec
+DELETE FROM wakatime_dependencies WHERE day_id = $1
+`
+
+func (q *Queries) DeleteDependenciesByDay(ctx context.Context, dayID int32) error {
+	_, err := q.db.Exec(ctx, deleteDependenciesByDay, dayID)
+	return err
+}
+
 const deleteDependency = `-- name: DeleteDependency :exec
 DELETE FROM wakatime_dependencies WHERE id = $1
 `
@@ -338,12 +347,30 @@ func (q *Queries) DeleteEditor(ctx context.Context, id int32) error {
 	return err
 }
 
+const deleteEditorsByDay = `-- name: DeleteEditorsByDay :exec
+DELETE FROM wakatime_editors WHERE day_id = $1
+`
+
+func (q *Queries) DeleteEditorsByDay(ctx context.Context, dayID int32) error {
+	_, err := q.db.Exec(ctx, deleteEditorsByDay, dayID)
+	return err
+}
+
 const deleteLanguage = `-- name: DeleteLanguage :exec
 DELETE FROM wakatime_languages WHERE id = $1
 `
 
 func (q *Queries) DeleteLanguage(ctx context.Context, id int32) error {
 	_, err := q.db.Exec(ctx, deleteLanguage, id)
+	return err
+}
+
+const deleteLanguagesByDay = `-- name: DeleteLanguagesByDay :exec
+DELETE FROM wakatime_languages WHERE day_id = $1
+`
+
+func (q *Queries) DeleteLanguagesByDay(ctx context.Context, dayID int32) error {
+	_, err := q.db.Exec(ctx, deleteLanguagesByDay, dayID)
 	return err
 }
 
@@ -356,6 +383,15 @@ func (q *Queries) DeleteMachine(ctx context.Context, id int32) error {
 	return err
 }
 
+const deleteMachinesByDay = `-- name: DeleteMachinesByDay :exec
+DELETE FROM wakatime_machines WHERE day_id = $1
+`
+
+func (q *Queries) DeleteMachinesByDay(ctx context.Context, dayID int32) error {
+	_, err := q.db.Exec(ctx, deleteMachinesByDay, dayID)
+	return err
+}
+
 const deleteOS = `-- name: DeleteOS :exec
 DELETE FROM wakatime_os WHERE id = $1
 `
@@ -365,12 +401,30 @@ func (q *Queries) DeleteOS(ctx context.Context, id int32) error {
 	return err
 }
 
+const deleteOSByDay = `-- name: DeleteOSByDay :exec
+DELETE FROM wakatime_os WHERE day_id = $1
+`
+
+func (q *Queries) DeleteOSByDay(ctx context.Context, dayID int32) error {
+	_, err := q.db.Exec(ctx, deleteOSByDay, dayID)
+	return err
+}
+
 const deleteProject = `-- name: DeleteProject :exec
 DELETE FROM wakatime_projects WHERE id = $1
 `
 
 func (q *Queries) DeleteProject(ctx context.Context, id int32) error {
 	_, err := q.db.Exec(ctx, deleteProject, id)
+	return err
+}
+
+const deleteProjectsByDay = `-- name: DeleteProjectsByDay :exec
+DELETE FROM wakatime_projects WHERE day_id = $1
+`
+
+func (q *Queries) DeleteProjectsByDay(ctx context.Context, dayID int32) error {
+	_, err := q.db.Exec(ctx, deleteProjectsByDay, dayID)
 	return err
 }
 
