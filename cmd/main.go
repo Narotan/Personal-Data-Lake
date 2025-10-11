@@ -1,12 +1,13 @@
 package main
 
 import (
-	"log"
 	"os"
 
 	"DataLake/auth"
 	"DataLake/db"
 	wakatime_db "DataLake/internal/db/wakatime"
+	"DataLake/internal/logger"
+	"DataLake/internal/metrics"
 	"DataLake/server"
 	"DataLake/wakatime"
 
@@ -15,8 +16,18 @@ import (
 )
 
 func main() {
+	environment := os.Getenv("ENVIRONMENT")
+	if environment == "" {
+		environment = "development"
+	}
+
+	logger.Init(environment)
+	metrics.Init()
+
+	log := logger.Get()
+
 	if err := godotenv.Load(); err != nil {
-		log.Fatalf("Error loading .env file: %v", err)
+		log.Fatal().Err(err).Msg("error loading .env file")
 	}
 
 	cfg := auth.Config{
@@ -27,35 +38,32 @@ func main() {
 
 	err := db.Connect()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal().Err(err).Msg("failed to connect to database")
 	}
 	store := wakatime_db.NewStore(db.Pool)
 
 	fullURL := auth.BuildAuthRequest(cfg)
-	log.Println("Auth URL:", fullURL)
+	log.Info().Str("auth_url", fullURL).Msg("oauth authorization url generated")
 
 	go func() {
 		userID := uuid.Must(uuid.FromString("00000000-0000-0000-0000-000000000001"))
 
-		// FetchSummaries теперь не принимает store и возвращает массив дней + ошибку
 		dailySummaries, err := wakatime.FetchSummaries()
 		if err != nil {
-			log.Printf("error fetching summaries: %v", err)
+			log.Error().Err(err).Msg("error fetching summaries")
 			return
 		}
 
-		// SaveSummaries теперь принимает массив дней
 		if err := wakatime.SaveSummaries(store, dailySummaries, userID); err != nil {
-			log.Printf("error saving summaries: %v", err)
+			log.Error().Err(err).Msg("error saving summaries")
 		} else {
-			log.Printf("successfully fetched and saved %d days\n", len(dailySummaries))
+			log.Info().Int("count", len(dailySummaries)).Msg("successfully saved summaries")
 		}
 	}()
 
-	logger := log.New(os.Stdout, "[DataLake] ", log.LstdFlags)
-	srv := server.NewServer(cfg, store, logger)
+	srv := server.NewServer(cfg, store)
 
 	if err := srv.Run(); err != nil {
-		log.Fatal(err)
+		log.Fatal().Err(err).Msg("server failed")
 	}
 }

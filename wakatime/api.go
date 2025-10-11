@@ -3,6 +3,8 @@ package wakatime
 import (
 	"DataLake/auth"
 	wakatime_db "DataLake/internal/db/wakatime"
+	"DataLake/internal/logger"
+	"DataLake/internal/metrics"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -15,23 +17,36 @@ import (
 
 // FetchSummaries получает данные по всем дням за последние 7 дней
 func FetchSummaries() ([]DailySummary, error) {
+	log := logger.Get()
+	start := time.Now()
+
+	metrics.WakatimeFetchTotal.Inc()
+
 	token, err := auth.LoadTokens()
 	if err != nil {
+		metrics.WakatimeFetchErrors.Inc()
+		log.Error().Err(err).Msg("failed to load tokens")
 		return nil, fmt.Errorf("failed to load tokens: %w", err)
 	}
 
-	// Вычисляем даты для последних 7 дней
 	end := time.Now().UTC()
-	start := end.AddDate(0, 0, -7)
+	startDate := end.AddDate(0, 0, -7)
 
 	url := fmt.Sprintf(
 		"https://wakatime.com/api/v1/users/current/summaries?start=%s&end=%s",
-		start.Format("2006-01-02"),
+		startDate.Format("2006-01-02"),
 		end.Format("2006-01-02"),
 	)
 
+	log.Info().
+		Str("start_date", startDate.Format("2006-01-02")).
+		Str("end_date", end.Format("2006-01-02")).
+		Msg("fetching wakatime summaries")
+
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
+		metrics.WakatimeFetchErrors.Inc()
+		log.Error().Err(err).Msg("failed to create request")
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 	req.Header.Set("Authorization", "Bearer "+token.AccessToken)
@@ -39,39 +54,59 @@ func FetchSummaries() ([]DailySummary, error) {
 	client := &http.Client{Timeout: 30 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
+		metrics.WakatimeFetchErrors.Inc()
+		log.Error().Err(err).Msg("request failed")
 		return nil, fmt.Errorf("request failed: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
+		metrics.WakatimeFetchErrors.Inc()
+		log.Error().Int("status_code", resp.StatusCode).Msg("unexpected status code")
 		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
 	}
 
 	var respData SummariesResponse
 	if err := json.NewDecoder(resp.Body).Decode(&respData); err != nil {
+		metrics.WakatimeFetchErrors.Inc()
+		log.Error().Err(err).Msg("failed to decode JSON")
 		return nil, fmt.Errorf("failed to decode JSON: %w", err)
 	}
+
+	metrics.WakatimeFetchDuration.Observe(time.Since(start).Seconds())
+	log.Info().
+		Int("days_fetched", len(respData.Data)).
+		Dur("duration", time.Since(start)).
+		Msg("successfully fetched wakatime summaries")
 
 	return respData.Data, nil
 }
 
 func SaveSummaries(store *wakatime_db.Store, dailySummaries []DailySummary, userID uuid.UUID) error {
+	log := logger.Get()
+	start := time.Now()
+
 	ctx := context.Background()
 
-	// Конвертируем UUID один раз
 	var uuidBytes [16]byte
 	copy(uuidBytes[:], userID.Bytes())
 
-	// Проходим по каждому дню из массива
+	log.Info().
+		Int("days_count", len(dailySummaries)).
+		Str("user_id", userID.String()).
+		Msg("saving wakatime summaries")
+
 	for _, daySummary := range dailySummaries {
 		err := store.ExecTx(ctx, func(q *wakatime_db.Queries) error {
-			// Парсим дату из строки формата "2024-01-15"
 			dayDate, err := time.Parse("2006-01-02", daySummary.Range.Date)
 			if err != nil {
+				log.Error().
+					Err(err).
+					Str("date", daySummary.Range.Date).
+					Msg("failed to parse date")
 				return fmt.Errorf("failed to parse date %q: %w", daySummary.Range.Date, err)
 			}
 
-			// Попробуем найти существующий день
 			existingDay, err := q.GetDayByDate(ctx, wakatime_db.GetDayByDateParams{
 				UserID: pgtype.UUID{Bytes: uuidBytes, Valid: true},
 				Date:   pgtype.Date{Time: dayDate, Valid: true},
@@ -79,17 +114,19 @@ func SaveSummaries(store *wakatime_db.Store, dailySummaries []DailySummary, user
 
 			var day wakatime_db.WakatimeDay
 			if err == nil {
-				// День существует, обновляем
 				day, err = q.UpdateDay(ctx, wakatime_db.UpdateDayParams{
 					ID:           existingDay.ID,
 					TotalSeconds: daySummary.GrandTotal.TotalSeconds,
 					Text:         pgtype.Text{String: daySummary.GrandTotal.Text, Valid: true},
 				})
 				if err != nil {
+					metrics.DatabaseOperationsTotal.WithLabelValues("update_day", "error").Inc()
+					log.Error().Err(err).Str("date", daySummary.Range.Date).Msg("failed to update day")
 					return fmt.Errorf("failed to update day %s: %w", daySummary.Range.Date, err)
 				}
+				metrics.DatabaseOperationsTotal.WithLabelValues("update_day", "success").Inc()
+				log.Debug().Str("date", daySummary.Range.Date).Msg("updated existing day")
 			} else {
-				// День не существует, создаем
 				day, err = q.CreateDay(ctx, wakatime_db.CreateDayParams{
 					UserID:       pgtype.UUID{Bytes: uuidBytes, Valid: true},
 					Date:         pgtype.Date{Time: dayDate, Valid: true},
@@ -97,13 +134,16 @@ func SaveSummaries(store *wakatime_db.Store, dailySummaries []DailySummary, user
 					Text:         pgtype.Text{String: daySummary.GrandTotal.Text, Valid: true},
 				})
 				if err != nil {
+					metrics.DatabaseOperationsTotal.WithLabelValues("create_day", "error").Inc()
+					log.Error().Err(err).Str("date", daySummary.Range.Date).Msg("failed to create day")
 					return fmt.Errorf("failed to create day %s: %w", daySummary.Range.Date, err)
 				}
+				metrics.DatabaseOperationsTotal.WithLabelValues("create_day", "success").Inc()
+				log.Debug().Str("date", daySummary.Range.Date).Msg("created new day")
 			}
 
 			dayID := day.ID
 
-			// Удаляем старые связанные записи для этого дня
 			if err := q.DeleteProjectsByDay(ctx, dayID); err != nil {
 				return fmt.Errorf("failed to delete old projects: %w", err)
 			}
@@ -193,7 +233,6 @@ func SaveSummaries(store *wakatime_db.Store, dailySummaries []DailySummary, user
 				}
 			}
 
-			// Сохраняем машины
 			for _, m := range daySummary.Machines {
 				_, err := q.CreateMachine(ctx, wakatime_db.CreateMachineParams{
 					DayID:        dayID,
@@ -207,15 +246,27 @@ func SaveSummaries(store *wakatime_db.Store, dailySummaries []DailySummary, user
 				}
 			}
 
-			fmt.Printf("Saved day %s (day_id: %d, total: %s)\n",
-				daySummary.Range.Date, day.ID, daySummary.GrandTotal.Text)
+			log.Debug().
+				Str("date", daySummary.Range.Date).
+				Int32("day_id", day.ID).
+				Str("total", daySummary.GrandTotal.Text).
+				Msg("saved day summary")
 			return nil
 		})
 
 		if err != nil {
+			metrics.DatabaseOperationsTotal.WithLabelValues("save_summary", "error").Inc()
+			log.Error().Err(err).Msg("failed to save summary")
 			return err
 		}
+		metrics.DatabaseOperationsTotal.WithLabelValues("save_summary", "success").Inc()
 	}
+
+	metrics.DatabaseOperationDuration.WithLabelValues("save_summaries").Observe(time.Since(start).Seconds())
+	log.Info().
+		Int("days_saved", len(dailySummaries)).
+		Dur("duration", time.Since(start)).
+		Msg("successfully saved all wakatime summaries")
 
 	return nil
 }
