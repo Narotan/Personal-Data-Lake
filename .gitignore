@@ -1,22 +1,45 @@
-# Go binaries
+# Sensitive data
+token.json
+summaries.json
+*.env
+.env.*
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+
+# Build artifacts
 *.exe
 *.exe~
 *.dll
 *.so
 *.dylib
+/bin/
+/dist/
 
-# Test binary
-*.test
+# Test coverage
 *.out
+coverage.html
 
-# Vendor folder
-/vendor/
+# Logs
+logs/
+*.log
 
-# IDE/editor configs
-.idea/
-.vscode/
-*.swp
+# Docker volumes data
+prometheus_data/
+loki_data/
+grafana_data/
 
-# Sensitive files
-.env
-tokens.json
+# OS files
+.DS_Store
+Thumbs.db
+
+# Vendor (if not committing dependencies)
+vendor/
+
+# Temporary files
+tmp/
+temp/
