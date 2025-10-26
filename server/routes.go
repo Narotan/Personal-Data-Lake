@@ -8,6 +8,6 @@ import (
 )
 
 func (s *Server) routes() {
-	s.mux.Handle("/callback", middleware.Logging(handlers.HandleCallback(s.cfg)))
+	s.mux.Handle("/callback", middleware.Logging(handlers.HandleCallback()))
 	s.mux.Handle("/metrics", promhttp.Handler())
 }
