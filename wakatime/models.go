@@ -25,7 +25,6 @@ type DaySummary struct {
 	TotalSeconds float64  `json:"total_seconds"`
 	Text         string   `json:"text"`
 }
-
 type Project struct {
 	Name         string  `json:"name"`
 	TotalSeconds float64 `json:"total_seconds"`
