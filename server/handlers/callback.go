@@ -2,12 +2,14 @@ package handlers
 
 import (
 	"DataLake/auth"
+	"DataLake/auth/wakatime"
 	"DataLake/internal/logger"
 	"fmt"
 	"net/http"
+	"os"
 )
 
-func HandleCallback(cfg auth.Config) http.HandlerFunc {
+func HandleCallback() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		log := logger.Get()
 
@@ -20,18 +22,21 @@ func HandleCallback(cfg auth.Config) http.HandlerFunc {
 
 		log.Info().Msg("received oauth callback")
 
-		token, err := auth.ExchangeCodeForToken(cfg, code)
+		wakatimeProvider := wakatime.NewProvider(
+			os.Getenv("CLIENT_ID"),
+			os.Getenv("CLIENT_SECRET"),
+			os.Getenv("REDIRECT_URI"),
+		)
+
+		token, err := wakatimeProvider.ExchangeToken(r.Context(), code)
 		if err != nil {
 			log.Error().Err(err).Msg("failed to exchange code for token")
 			http.Error(w, "Failed to exchange code for token: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		err = auth.SaveTokens(auth.Tokens{
-			AccessToken:  token.AccessToken,
-			RefreshToken: token.RefreshToken,
-			ExpiresAt:    token.ExpiresAt,
-		})
+		storage := auth.NewFileTokenStorage("tokens.json")
+		err = storage.SaveToken("wakatime", token)
 
 		if err != nil {
 			log.Error().Err(err).Msg("failed to save tokens")

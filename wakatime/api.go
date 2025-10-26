@@ -22,7 +22,8 @@ func FetchSummaries() ([]DailySummary, error) {
 
 	metrics.WakatimeFetchTotal.Inc()
 
-	token, err := auth.LoadTokens()
+	storage := auth.NewFileTokenStorage("tokens.json")
+	token, err := storage.LoadToken("wakatime")
 	if err != nil {
 		metrics.WakatimeFetchErrors.Inc()
 		log.Error().Err(err).Msg("failed to load tokens")

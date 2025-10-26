@@ -16,7 +16,6 @@ RUN apk --no-cache add ca-certificates tzdata
 WORKDIR /app
 
 COPY --from=builder /build/data-lake .
-COPY --from=builder /build/.env .
 
 EXPOSE 8080
 

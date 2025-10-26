@@ -20,16 +20,18 @@ services:
       timeout: 5s
       retries: 5
 
-  data-lake:
+  data_lake:
     build: .
     container_name: data-lake
     ports:
       - "8080:8080"
+    env_file:
+      - .env
     environment:
-      - CLIENT_ID=${CLIENT_ID}
-      - CLIENT_SECRET=${CLIENT_SECRET}
-      - REDIRECT_URI=${REDIRECT_URI}
+      - ENVIRONMENT=production
       - DSN=postgres://postgres:postgres@postgres:5432/datalake?sslmode=disable
+    volumes:
+      - ./tokens.json:/app/tokens.json
     networks:
       - monitoring
     restart: unless-stopped
@@ -87,7 +89,7 @@ services:
       - monitoring
     depends_on:
       - loki
-      - data-lake
+      - data_lake
 
   grafana:
     image: grafana/grafana:latest
@@ -121,5 +123,4 @@ volumes:
 networks:
   monitoring:
     driver: bridge
-
 
