@@ -1,11 +1,13 @@
 global:
-  scrape_interval: 15s
-  evaluation_interval: 15s
+  scrape_interval: 60s
+  evaluation_interval: 60s
+  scrape_timeout: 30s
 
 scrape_configs:
   - job_name: 'data-lake'
+    scrape_interval: 120s
     static_configs:
-      - targets: ['host.docker.internal:8080']
+      - targets: ['data-lake:8080']
         labels:
           service: 'data-lake'
           environment: 'development'
