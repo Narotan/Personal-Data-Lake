@@ -1,0 +1,38 @@
+# Binaries
+data-lake
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test binary
+*.test
+
+# Output
+*.out
+
+# Go workspace file
+go.work
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Config
+.env.local
+.env.*.local
+
+# Database
+*.db
+
+# Temp files
+token.json
+summaries.json
