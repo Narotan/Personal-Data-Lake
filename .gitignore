@@ -43,3 +43,4 @@ vendor/
 # Temporary files
 tmp/
 temp/
+tokens.json
