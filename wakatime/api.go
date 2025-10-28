@@ -2,6 +2,7 @@ package wakatime
 
 import (
 	"DataLake/auth"
+	internal_db "DataLake/internal/db"
 	wakatime_db "DataLake/internal/db/wakatime"
 	"DataLake/internal/logger"
 	"DataLake/internal/metrics"
@@ -83,7 +84,7 @@ func FetchSummaries() ([]DailySummary, error) {
 	return respData.Data, nil
 }
 
-func SaveSummaries(store *wakatime_db.Store, dailySummaries []DailySummary, userID uuid.UUID) error {
+func SaveSummaries(store *internal_db.Store, dailySummaries []DailySummary, userID uuid.UUID) error {
 	log := logger.Get()
 	start := time.Now()
 
