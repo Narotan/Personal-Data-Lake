@@ -65,105 +65,105 @@ func (p *Provider) GetAuthURL(state string) string {
 	return u.String()
 }
 
+func (p *Provider) ExchangeToken(ctx context.Context, code string) (auth.TokenResponse, error) {
 	log := logger.Get()
 
-func (p *Provider) ExchangeToken(ctx context.Context, code string) (auth.TokenResponse, error) {
 	data := url.Values{}
 	data.Set("code", code)
 	data.Set("client_id", p.clientID)
 	data.Set("client_secret", p.clientSecret)
 	data.Set("redirect_uri", p.redirectURI)
 	data.Set("grant_type", "authorization_code")
+
 	log.Info().Str("url", googleTokenEndpoint).Msg("exchanging code for token")
 
-
 	req, err := http.NewRequestWithContext(ctx, "POST", googleTokenEndpoint, strings.NewReader(data.Encode()))
-		log.Error().Err(err).Msg("failed to create request")
 	if err != nil {
+		log.Error().Err(err).Msg("failed to create request")
 		return auth.TokenResponse{}, fmt.Errorf("failed to create request: %w", err)
 	}
-		log.Error().Err(err).Msg("failed to execute request")
 
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	client := &http.Client{Timeout: 10 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Error().Err(err).Msg("failed to read response body")
+		log.Error().Err(err).Msg("failed to execute request")
 		return auth.TokenResponse{}, fmt.Errorf("failed to exchange token: %w", err)
 	}
-		log.Error().Str("status", resp.Status).Str("body", string(body)).Msg("token exchange failed")
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
+		log.Error().Err(err).Msg("failed to read response body")
 		return auth.TokenResponse{}, fmt.Errorf("failed to read response: %w", err)
-		log.Error().Err(err).Msg("failed to parse response")
 	}
 
 	if resp.StatusCode != http.StatusOK {
-	log.Info().Msg("successfully exchanged code for token")
-
+		log.Error().Str("status", resp.Status).Str("body", string(body)).Msg("token exchange failed")
 		return auth.TokenResponse{}, fmt.Errorf("token exchange failed: %s - %s", resp.Status, string(body))
 	}
 
 	var tokenResp tokenResponse
-	log := logger.Get()
-
 	if err := json.Unmarshal(body, &tokenResp); err != nil {
+		log.Error().Err(err).Msg("failed to parse response")
 		return auth.TokenResponse{}, fmt.Errorf("failed to parse token response: %w", err)
 	}
 
+	log.Info().Msg("successfully exchanged code for token")
+
 	return auth.TokenResponse{
 		AccessToken:  tokenResp.AccessToken,
-	log.Info().Str("url", googleTokenEndpoint).Msg("refreshing token")
-
 		RefreshToken: tokenResp.RefreshToken,
 		ExpiresAt:    time.Now().Add(time.Duration(tokenResp.ExpiresIn) * time.Second).Format(time.RFC3339),
-		log.Error().Err(err).Msg("failed to create request")
 	}, nil
 }
 
 func (p *Provider) RefreshToken(ctx context.Context, refreshToken string) (auth.TokenResponse, error) {
-		log.Error().Err(err).Msg("failed to execute request")
+	log := logger.Get()
+
 	data := url.Values{}
 	data.Set("refresh_token", refreshToken)
 	data.Set("client_id", p.clientID)
 	data.Set("client_secret", p.clientSecret)
 	data.Set("grant_type", "refresh_token")
 
-		log.Error().Err(err).Msg("failed to read response body")
+	log.Info().Str("url", googleTokenEndpoint).Msg("refreshing token")
+
 	req, err := http.NewRequestWithContext(ctx, "POST", googleTokenEndpoint, strings.NewReader(data.Encode()))
 	if err != nil {
+		log.Error().Err(err).Msg("failed to create request")
 		return auth.TokenResponse{}, fmt.Errorf("failed to create request: %w", err)
 	}
-		log.Error().Str("status", resp.Status).Str("body", string(body)).Msg("token refresh failed")
 
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	client := &http.Client{Timeout: 10 * time.Second}
 	resp, err := client.Do(req)
-		log.Error().Err(err).Msg("failed to parse response")
 	if err != nil {
+		log.Error().Err(err).Msg("failed to execute request")
 		return auth.TokenResponse{}, fmt.Errorf("failed to refresh token: %w", err)
 	}
-	log.Info().Msg("successfully refreshed token")
-
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
+		log.Error().Err(err).Msg("failed to read response body")
 		return auth.TokenResponse{}, fmt.Errorf("failed to read response: %w", err)
 	}
 
 	if resp.StatusCode != http.StatusOK {
+		log.Error().Str("status", resp.Status).Str("body", string(body)).Msg("token refresh failed")
 		return auth.TokenResponse{}, fmt.Errorf("token refresh failed: %s - %s", resp.Status, string(body))
 	}
 
 	var tokenResp tokenResponse
 	if err := json.Unmarshal(body, &tokenResp); err != nil {
+		log.Error().Err(err).Msg("failed to parse response")
 		return auth.TokenResponse{}, fmt.Errorf("failed to parse token response: %w", err)
 	}
+
+	log.Info().Msg("successfully refreshed token")
 
 	return auth.TokenResponse{
 		AccessToken:  tokenResp.AccessToken,
