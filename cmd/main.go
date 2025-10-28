@@ -1,11 +1,12 @@
 package main
 
 import (
+	"DataLake/googlefit"
 	"os"
 
-	"DataLake/auth/wakatime"
+	wakatimeauth "DataLake/auth/wakatime"
 	"DataLake/db"
-	wakatime_db "DataLake/internal/db/wakatime"
+	internal_db "DataLake/internal/db"
 	"DataLake/internal/logger"
 	"DataLake/internal/metrics"
 	"DataLake/server"
@@ -33,7 +34,7 @@ func main() {
 		}
 	}
 
-	wakatimeProvider := wakatime.NewProvider(
+	wakatimeProvider := wakatimeauth.NewProvider(
 		os.Getenv("CLIENT_ID"),
 		os.Getenv("CLIENT_SECRET"),
 		os.Getenv("REDIRECT_URI"),

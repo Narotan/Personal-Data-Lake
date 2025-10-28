@@ -1,4 +1,4 @@
-package wakatime
+package wakatimeauth
 
 import (
 	"DataLake/auth"
