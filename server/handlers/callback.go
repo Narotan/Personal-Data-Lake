@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"DataLake/auth"
-	"DataLake/auth/wakatime"
+	wakatimeauth "DataLake/auth/wakatime"
 	"DataLake/internal/logger"
 	"fmt"
 	"net/http"
@@ -22,7 +22,7 @@ func HandleCallback() http.HandlerFunc {
 
 		log.Info().Msg("received oauth callback")
 
-		wakatimeProvider := wakatime.NewProvider(
+		wakatimeProvider := wakatimeauth.NewProvider(
 			os.Getenv("CLIENT_ID"),
 			os.Getenv("CLIENT_SECRET"),
 			os.Getenv("REDIRECT_URI"),

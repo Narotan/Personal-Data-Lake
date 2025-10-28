@@ -1,7 +1,8 @@
-package googlefit
+package googlefitauth
 
 import (
 	"DataLake/auth"
+	"DataLake/internal/logger"
 	"context"
 	"encoding/json"
 	"fmt"
