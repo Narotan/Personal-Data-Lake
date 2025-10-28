@@ -44,7 +44,7 @@ func main() {
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to connect to database")
 	}
-	store := wakatime_db.NewStore(db.Pool)
+	store := internal_db.NewStore(db.Pool)
 
 	fullURL := wakatimeProvider.GetAuthURL("state")
 	log.Info().Str("auth_url", fullURL).Msg("oauth authorization url generated")
