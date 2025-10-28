@@ -45,6 +45,28 @@ var (
 		},
 	)
 
+	GoogleFitFetchTotal = promauto.NewCounter(
+		prometheus.CounterOpts{
+			Name: "googlefit_fetch_total",
+			Help: "Total number of Google Fit data fetches",
+		},
+	)
+
+	GoogleFitFetchErrors = promauto.NewCounter(
+		prometheus.CounterOpts{
+			Name: "googlefit_fetch_errors_total",
+			Help: "Total number of Google Fit fetch errors",
+		},
+	)
+
+	GoogleFitFetchDuration = promauto.NewHistogram(
+		prometheus.HistogramOpts{
+			Name:    "googlefit_fetch_duration_seconds",
+			Help:    "Google Fit fetch duration in seconds",
+			Buckets: prometheus.DefBuckets,
+		},
+	)
+
 	DatabaseOperationsTotal = promauto.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "database_operations_total",
