@@ -21,7 +21,7 @@ func main() {
 	if environment == "" {
 		environment = "development"
 	}
-	development
+
 	logger.Init(environment)
 	metrics.Init()
 
@@ -63,6 +63,10 @@ func main() {
 		} else {
 			log.Info().Int("count", len(dailySummaries)).Msg("successfully saved summaries")
 		}
+	}()
+
+	go func() {
+		googlefit.FetchSummaries()
 	}()
 
 	srv := server.NewServer(store)
