@@ -15,7 +15,10 @@ func (s *Server) routes() {
 	s.mux.Handle("/auth/googlefit", middleware.Logging(handlers.HandleGoogleFitAuth()))
 	s.mux.Handle("/oauth2callback", middleware.Logging(handlers.HandleGoogleFitCallback()))
 
-	// Google Fit test endpoint
+	// Google Calendar OAuth
+	s.mux.Handle("/auth/googlecalendar", middleware.Logging(handlers.HandleGoogleCalendarAuth()))
+	s.mux.Handle("/oauth2callback/calendar", middleware.Logging(handlers.HandleGoogleCalendarCallback()))
+
 	// Metrics
 	s.mux.Handle("/metrics", promhttp.Handler())
 }

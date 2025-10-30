@@ -7,12 +7,30 @@ plugins:
       sha256: 4ca52949f4dc04b55188439f5de0ae20af2a71e3534b87907f2a7f466bda59ec
 
 sql:
-  - schema: db/schema/*.sql
-    queries: db/queries/*.sql
+  - schema: db/schema/wakatime.sql
+    queries: db/queries/wakatime_queries.sql
     engine: postgresql
     codegen:
       - plugin: golang
         out: internal/db/wakatime
         options:
           package: wakatime_db
+          sql_package: pgx/v5
+  - schema: db/schema/googlefit.sql
+    queries: db/queries/googlefit_queries.sql
+    engine: postgresql
+    codegen:
+      - plugin: golang
+        out: internal/db/googlefit
+        options:
+          package: googlefit_db
+          sql_package: pgx/v5
+  - schema: db/schema/googlecalendar.sql
+    queries: db/queries/googlecalendar_queries.sql
+    engine: postgresql
+    codegen:
+      - plugin: golang
+        out: internal/db/googlecalendar
+        options:
+          package: googlecalendar_db
           sql_package: pgx/v5

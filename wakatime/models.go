@@ -86,7 +86,6 @@ type SummaryResponse struct {
 	Data Summary `json:"data"`
 }
 
-// Структуры для /summaries endpoint (массив дней)
 type DailySummary struct {
 	GrandTotal struct {
 		TotalSeconds float64 `json:"total_seconds"`

@@ -1,4 +1,4 @@
-package googlefitauth
+package googlecalendarauth
 
 import (
 	"DataLake/auth"
@@ -19,10 +19,8 @@ const (
 )
 
 var defaultScopes = []string{
-	"https://www.googleapis.com/auth/fitness.activity.read",
-	"https://www.googleapis.com/auth/fitness.body.read",
-	"https://www.googleapis.com/auth/fitness.sleep.read",
-	"https://www.googleapis.com/auth/fitness.location.read",
+	"https://www.googleapis.com/auth/calendar.readonly",
+	"https://www.googleapis.com/auth/calendar.events.readonly",
 }
 
 type Provider struct {
