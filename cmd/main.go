@@ -1,6 +1,7 @@
 package main
 
 import (
+	"DataLake/googlecalendar"
 	"DataLake/googlefit"
 	"os"
 
@@ -66,7 +67,29 @@ func main() {
 	}()
 
 	go func() {
-		googlefit.FetchSummaries()
+		userID := uuid.Must(uuid.FromString("00000000-0000-0000-0000-000000000001"))
+
+		response, err := googlefit.FetchSummaries(7)
+		if err != nil {
+			log.Error().Err(err).Msg("failed to fetch google fit summaries")
+			return
+		}
+
+		if err := googlefit.SaveSummaries(store, response, userID); err != nil {
+			log.Error().Err(err).Msg("error saving google fit summaries")
+		} else {
+			log.Info().Msg("successfully saved google fit summaries")
+		}
+	}()
+
+	go func() {
+		userID := uuid.Must(uuid.FromString("00000000-0000-0000-0000-000000000001"))
+
+		if err := googlecalendar.FetchAndStoreEvents(store, 30, userID); err != nil {
+			log.Error().Err(err).Msg("failed to fetch and store google calendar events")
+		} else {
+			log.Info().Msg("successfully saved google calendar events")
+		}
 	}()
 
 	srv := server.NewServer(store)
