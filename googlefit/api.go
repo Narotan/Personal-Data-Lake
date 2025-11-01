@@ -2,6 +2,7 @@ package googlefit
 
 import (
 	"DataLake/auth"
+	googlefitauth "DataLake/auth/googlefit"
 	internal_db "DataLake/internal/db"
 	googlefit_db "DataLake/internal/db/googlefit"
 	"DataLake/internal/logger"
@@ -23,13 +24,17 @@ func FetchSummaries(days int) (*AggregatedDataResponse, error) {
 	log := logger.Get()
 	start := time.Now()
 	metrics.GoogleFitFetchTotal.Inc()
+	ctx := context.Background()
 
 	storage := auth.NewFileTokenStorage("tokens.json")
-	token, err := storage.LoadToken("googlefit")
+	provider := googlefitauth.NewProviderFromEnv()
+	tokenManager := auth.NewTokenManager(storage, provider)
+
+	token, err := tokenManager.GetValidToken(ctx, "googlefit")
 	if err != nil {
 		metrics.GoogleFitFetchErrors.Inc()
-		log.Error().Err(err).Msg("failed to load tokens")
-		return nil, fmt.Errorf("failed to load tokens: %w", err)
+		log.Error().Err(err).Msg("failed to get valid token")
+		return nil, fmt.Errorf("failed to get valid token: %w", err)
 	}
 
 	url := "https://www.googleapis.com/fitness/v1/users/me/dataset:aggregate"

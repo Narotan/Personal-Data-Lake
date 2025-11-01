@@ -24,3 +24,15 @@ type TokenResponse struct {
 	Scope        string `json:"scope,omitempty"`
 	UID          string `json:"uid,omitempty"`
 }
+
+// NewGoogleCalendarProvider создаёт провайдер для Google Calendar из env переменных
+func NewGoogleCalendarProvider() Provider {
+	// Импорт здесь избежит циклических зависимостей
+	// Но лучше передавать провайдер извне
+	return nil // Временно, будет реализовано в вызывающем коде
+}
+
+// NewGoogleFitProvider создаёт провайдер для Google Fit из env переменных
+func NewGoogleFitProvider() Provider {
+	return nil // Временно, будет реализовано в вызывающем коде
+}
