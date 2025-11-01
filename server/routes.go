@@ -19,6 +19,10 @@ func (s *Server) routes() {
 	s.mux.Handle("/auth/googlecalendar", middleware.Logging(handlers.HandleGoogleCalendarAuth()))
 	s.mux.Handle("/oauth2callback/calendar", middleware.Logging(handlers.HandleGoogleCalendarCallback()))
 
+	// ActivityWatch
+	awHandler := handlers.NewActivityWatchHandler(s.store.ActivityWatch, nil)
+	s.mux.HandleFunc("/api/activitywatch/events", awHandler.HandleEvents)
+
 	// Metrics
 	s.mux.Handle("/metrics", promhttp.Handler())
 }

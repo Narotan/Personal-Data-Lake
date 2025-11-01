@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 
+	activitywatch_db "DataLake/internal/db/activitywatch"
 	googlecalendar_db "DataLake/internal/db/googlecalendar"
 	googlefit_db "DataLake/internal/db/googlefit"
 	wakatime_db "DataLake/internal/db/wakatime"
@@ -14,6 +15,7 @@ import (
 type Store struct {
 	WakaTime       *wakatime_db.Queries
 	GoogleFit      *googlefit_db.Queries
+	ActivityWatch  *activitywatch_db.Queries
 	GoogleCalendar *googlecalendar_db.Queries
 	db             *pgxpool.Pool
 }
@@ -21,6 +23,7 @@ type Store struct {
 func NewStore(pool *pgxpool.Pool) *Store {
 	return &Store{
 		WakaTime:       wakatime_db.New(pool),
+		ActivityWatch:  activitywatch_db.New(pool),
 		GoogleFit:      googlefit_db.New(pool),
 		GoogleCalendar: googlecalendar_db.New(pool),
 		db:             pool,

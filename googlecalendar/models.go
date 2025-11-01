@@ -1,6 +1,8 @@
 package googlecalendar
 
-import "time"
+import (
+	"time"
+)
 
 // CalendarListResponse представляет список календарей пользователя
 type CalendarListResponse struct {
@@ -91,7 +93,6 @@ type Attendee struct {
 	Comment        string `json:"comment,omitempty"`
 }
 
-// ParseEventTime парсит время события в time.Time
 func (e *EventDateTime) ParseEventTime() (time.Time, error) {
 	if e.DateTime != "" {
 		return time.Parse(time.RFC3339, e.DateTime)

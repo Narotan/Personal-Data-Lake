@@ -2,6 +2,7 @@ package googlecalendar
 
 import (
 	"DataLake/auth"
+	googlecalendarauth "DataLake/auth/googlecalendar"
 	internal_db "DataLake/internal/db"
 	googlecalendar_db "DataLake/internal/db/googlecalendar"
 	"DataLake/internal/logger"
@@ -24,12 +25,16 @@ const (
 // FetchCalendars получает список календарей пользователя
 func FetchCalendars() (*CalendarListResponse, error) {
 	log := logger.Get()
+	ctx := context.Background()
 
 	storage := auth.NewFileTokenStorage("tokens.json")
-	token, err := storage.LoadToken("googlecalendar")
+	provider := googlecalendarauth.NewProviderFromEnv()
+	tokenManager := auth.NewTokenManager(storage, provider)
+
+	token, err := tokenManager.GetValidToken(ctx, "googlecalendar")
 	if err != nil {
-		log.Error().Err(err).Msg("failed to load tokens")
-		return nil, fmt.Errorf("failed to load tokens: %w", err)
+		log.Error().Err(err).Msg("failed to get valid token")
+		return nil, fmt.Errorf("failed to get valid token: %w", err)
 	}
 
 	apiURL := fmt.Sprintf("%s/users/me/calendarList", calendarAPIBaseURL)
@@ -74,12 +79,16 @@ func FetchCalendars() (*CalendarListResponse, error) {
 // FetchEvents получает события из календаря за указанный период
 func FetchEvents(calendarID string, startTime, endTime time.Time) (*EventsResponse, error) {
 	log := logger.Get()
+	ctx := context.Background()
 
 	storage := auth.NewFileTokenStorage("tokens.json")
-	token, err := storage.LoadToken("googlecalendar")
+	provider := googlecalendarauth.NewProviderFromEnv()
+	tokenManager := auth.NewTokenManager(storage, provider)
+
+	token, err := tokenManager.GetValidToken(ctx, "googlecalendar")
 	if err != nil {
-		log.Error().Err(err).Msg("failed to load tokens")
-		return nil, fmt.Errorf("failed to load tokens: %w", err)
+		log.Error().Err(err).Msg("failed to get valid token")
+		return nil, fmt.Errorf("failed to get valid token: %w", err)
 	}
 
 	baseURL := fmt.Sprintf("%s/calendars/%s/events", calendarAPIBaseURL, url.PathEscape(calendarID))

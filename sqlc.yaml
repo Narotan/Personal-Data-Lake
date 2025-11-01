@@ -34,3 +34,12 @@ sql:
         options:
           package: googlecalendar_db
           sql_package: pgx/v5
+  - schema: db/schema/activitywatch.sql
+    queries: db/queries/activitywatch_queries.sql
+    engine: postgresql
+    codegen:
+      - plugin: golang
+        out: internal/db/activitywatch
+        options:
+          package: activitywatch_db
+          sql_package: pgx/v5
