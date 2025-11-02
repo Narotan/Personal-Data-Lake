@@ -1,11 +1,11 @@
 CREATE TABLE IF NOT EXISTS activity_events (
-    id BIGINT PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     timestamp TIMESTAMPTZ NOT NULL,
     duration FLOAT NOT NULL,
     app TEXT NOT NULL,
     title TEXT,
     bucket_id TEXT NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT now()
+    created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE INDEX IF NOT EXISTS idx_activity_timestamp ON activity_events(timestamp DESC);

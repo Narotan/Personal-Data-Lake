@@ -3,99 +3,127 @@ package handlers
 import (
 	"context"
 	"encoding/json"
-	"log/slog"
 	"net/http"
 	"time"
 
 	activitywatch_db "DataLake/internal/db/activitywatch"
-
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/rs/zerolog"
 )
 
 type ActivityWatchHandler struct {
 	queries *activitywatch_db.Queries
-	logger  *slog.Logger
+	logger  *zerolog.Logger
 }
 
-func NewActivityWatchHandler(queries *activitywatch_db.Queries, logger *slog.Logger) *ActivityWatchHandler {
+func NewActivityWatchHandler(queries *activitywatch_db.Queries, logger *zerolog.Logger) *ActivityWatchHandler {
 	return &ActivityWatchHandler{
 		queries: queries,
 		logger:  logger,
 	}
 }
 
-type ActivityEventPayload struct {
-	ID        int64                  `json:"id"`
-	Timestamp time.Time              `json:"timestamp"`
-	Duration  float64                `json:"duration"`
-	Data      map[string]interface{} `json:"data"`
-}
-
-type ActivityWatchRequest struct {
-	BucketID string                 `json:"bucket_id"`
-	Events   []ActivityEventPayload `json:"events"`
+type ActivityEventRequest struct {
+	Timestamp time.Time `json:"timestamp"`
+	Duration  float64   `json:"duration"`
+	App       string    `json:"app"`
+	Title     string    `json:"title"`
+	BucketID  string    `json:"bucket_id"`
 }
 
 func (h *ActivityWatchHandler) HandleEvents(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
-	var req ActivityWatchRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		h.logger.Error("failed to decode request", "error", err)
-		http.Error(w, "invalid payload", http.StatusBadRequest)
+	var events []ActivityEventRequest
+	if err := json.NewDecoder(r.Body).Decode(&events); err != nil {
+		h.logger.Error().Err(err).Msg("Failed to decode events")
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
 
-	if len(req.Events) == 0 {
+	if len(events) == 0 {
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(map[string]string{"status": "ok", "inserted": "0"})
+		json.NewEncoder(w).Encode(map[string]string{"message": "No events to insert"})
 		return
+	}
+
+	params := make([]activitywatch_db.BulkInsertEventsParams, len(events))
+	for i, event := range events {
+		params[i] = activitywatch_db.BulkInsertEventsParams{
+			Timestamp: pgtype.Timestamptz{Time: event.Timestamp, Valid: true},
+			Duration:  event.Duration,
+			App:       event.App,
+			Title:     pgtype.Text{String: event.Title, Valid: event.Title != ""},
+			BucketID:  event.BucketID,
+		}
 	}
 
 	ctx := context.Background()
-
-	for _, event := range req.Events {
-		app := "unknown"
-		title := "unknown"
-
-		if appVal, ok := event.Data["app"].(string); ok {
-			app = appVal
-		}
-		if titleVal, ok := event.Data["title"].(string); ok {
-			title = titleVal
-		}
-
-		params := activitywatch_db.InsertActivityEventParams{
-			ID:       event.ID,
-			Duration: event.Duration,
-			App:      app,
-			BucketID: req.BucketID,
-		}
-
-		params.Timestamp = pgtype.Timestamptz{
-			Time:  event.Timestamp,
-			Valid: true,
-		}
-
-		params.Title = pgtype.Text{
-			String: title,
-			Valid:  title != "",
-		}
-
-		if err := h.queries.InsertActivityEvent(ctx, params); err != nil {
-			h.logger.Error("failed to insert event", "error", err, "event_id", event.ID)
-			continue
-		}
+	count, err := h.queries.BulkInsertEvents(ctx, params)
+	if err != nil {
+		h.logger.Error().Err(err).Int("count", len(events)).Msg("Failed to insert events")
+		http.Error(w, "Failed to save events", http.StatusInternalServerError)
+		return
 	}
 
-	h.logger.Info("inserted activity events", "count", len(req.Events), "bucket", req.BucketID)
+	h.logger.Info().Int64("count", count).Msg("Inserted activity events")
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"status":   "ok",
-		"inserted": len(req.Events),
+		"message":  "Events saved successfully",
+		"inserted": count,
 	})
+}
+
+func (h *ActivityWatchHandler) HandleStats(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	query := r.URL.Query()
+	startStr := query.Get("start")
+	endStr := query.Get("end")
+
+	var start, end time.Time
+	var err error
+
+	if startStr != "" {
+		start, err = time.Parse(time.RFC3339, startStr)
+		if err != nil {
+			http.Error(w, "Invalid start time", http.StatusBadRequest)
+			return
+		}
+	} else {
+		start = time.Now().Add(-24 * time.Hour)
+	}
+
+	if endStr != "" {
+		end, err = time.Parse(time.RFC3339, endStr)
+		if err != nil {
+			http.Error(w, "Invalid end time", http.StatusBadRequest)
+			return
+		}
+	} else {
+		end = time.Now()
+	}
+
+	ctx := context.Background()
+	params := activitywatch_db.GetAppStatsParams{
+		Timestamp:   pgtype.Timestamptz{Time: start, Valid: true},
+		Timestamp_2: pgtype.Timestamptz{Time: end, Valid: true},
+	}
+
+	stats, err := h.queries.GetAppStats(ctx, params)
+	if err != nil {
+		h.logger.Error().Err(err).Msg("Failed to get stats")
+		http.Error(w, "Failed to get stats", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(stats)
 }

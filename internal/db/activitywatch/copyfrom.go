@@ -9,13 +9,13 @@ import (
 	"context"
 )
 
-// iteratorForBatchInsertActivityEvents implements pgx.CopyFromSource.
-type iteratorForBatchInsertActivityEvents struct {
-	rows                 []BatchInsertActivityEventsParams
+// iteratorForBulkInsertEvents implements pgx.CopyFromSource.
+type iteratorForBulkInsertEvents struct {
+	rows                 []BulkInsertEventsParams
 	skippedFirstNextCall bool
 }
 
-func (r *iteratorForBatchInsertActivityEvents) Next() bool {
+func (r *iteratorForBulkInsertEvents) Next() bool {
 	if len(r.rows) == 0 {
 		return false
 	}
@@ -27,9 +27,8 @@ func (r *iteratorForBatchInsertActivityEvents) Next() bool {
 	return len(r.rows) > 0
 }
 
-func (r iteratorForBatchInsertActivityEvents) Values() ([]interface{}, error) {
+func (r iteratorForBulkInsertEvents) Values() ([]interface{}, error) {
 	return []interface{}{
-		r.rows[0].ID,
 		r.rows[0].Timestamp,
 		r.rows[0].Duration,
 		r.rows[0].App,
@@ -38,10 +37,10 @@ func (r iteratorForBatchInsertActivityEvents) Values() ([]interface{}, error) {
 	}, nil
 }
 
-func (r iteratorForBatchInsertActivityEvents) Err() error {
+func (r iteratorForBulkInsertEvents) Err() error {
 	return nil
 }
 
-func (q *Queries) BatchInsertActivityEvents(ctx context.Context, arg []BatchInsertActivityEventsParams) (int64, error) {
-	return q.db.CopyFrom(ctx, []string{"activity_events"}, []string{"id", "timestamp", "duration", "app", "title", "bucket_id"}, &iteratorForBatchInsertActivityEvents{rows: arg})
+func (q *Queries) BulkInsertEvents(ctx context.Context, arg []BulkInsertEventsParams) (int64, error) {
+	return q.db.CopyFrom(ctx, []string{"activity_events"}, []string{"timestamp", "duration", "app", "title", "bucket_id"}, &iteratorForBulkInsertEvents{rows: arg})
 }

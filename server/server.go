@@ -4,17 +4,22 @@ import (
 	internal_db "DataLake/internal/db"
 	"DataLake/internal/logger"
 	"net/http"
+
+	"github.com/rs/zerolog"
 )
 
 type Server struct {
-	store *internal_db.Store
-	mux   *http.ServeMux
+	store  *internal_db.Store
+	mux    *http.ServeMux
+	logger zerolog.Logger
 }
 
 func NewServer(store *internal_db.Store) *Server {
+	log := logger.Get()
 	s := &Server{
-		store: store,
-		mux:   http.NewServeMux(),
+		store:  store,
+		mux:    http.NewServeMux(),
+		logger: log,
 	}
 
 	s.routes()
