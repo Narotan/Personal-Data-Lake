@@ -1,47 +1,55 @@
-# Sensitive data
-token.json
-summaries.json
-*.env
-.env.*
-
-# IDE
-.idea/
-*.iml
-.vscode/
-*.swp
-*.swo
-
-# Build artifacts
+# Бинарники и исполняемые файлы
+bin/
 *.exe
-*.exe~
 *.dll
 *.so
 *.dylib
-/bin/
-/dist/
+data-lake
+aw-client
 
-# Test coverage
-*.out
-coverage.html
-
-# Logs
-logs/
-*.log
-
-# Docker volumes data
-prometheus_data/
-loki_data/
-grafana_data/
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Vendor (if not committing dependencies)
+# Go модули и кеш
 vendor/
+*.test
+*.out
+go.work
 
-# Temporary files
+# IDE и редакторы
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Логи
+*.log
+logs/
+
+# Конфигурация и секреты
+.env
+.env.local
+tokens.json
+*.key
+*.pem
+config.local.yml
+aw-client-config.yml
+
+# База данных
+*.db
+*.sqlite
+*.sqlite3
+data/
+postgres-data/
+
+# Docker volumes
+docker-data/
+
+# Временные файлы
 tmp/
 temp/
-tokens.json
-tokens.json
+*.tmp
+
+# OS
+Thumbs.db
+.Trash-*
+

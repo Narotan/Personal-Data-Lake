@@ -11,8 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type BatchInsertActivityEventsParams struct {
-	ID        int64
+type BulkInsertEventsParams struct {
 	Timestamp pgtype.Timestamptz
 	Duration  float64
 	App       string
@@ -20,25 +19,15 @@ type BatchInsertActivityEventsParams struct {
 	BucketID  string
 }
 
-const deleteOldEvents = `-- name: DeleteOldEvents :exec
-DELETE FROM activity_events
-WHERE timestamp < $1
-`
-
-func (q *Queries) DeleteOldEvents(ctx context.Context, timestamp pgtype.Timestamptz) error {
-	_, err := q.db.Exec(ctx, deleteOldEvents, timestamp)
-	return err
-}
-
 const getAppStats = `-- name: GetAppStats :many
 SELECT
     app,
-    COUNT(*) as event_count,
-    SUM(duration) as total_seconds
+    SUM(duration)::float as total_duration,
+    COUNT(*) as event_count
 FROM activity_events
 WHERE timestamp >= $1 AND timestamp < $2
 GROUP BY app
-ORDER BY total_seconds DESC
+ORDER BY total_duration DESC
 `
 
 type GetAppStatsParams struct {
@@ -47,9 +36,9 @@ type GetAppStatsParams struct {
 }
 
 type GetAppStatsRow struct {
-	App          string
-	EventCount   int64
-	TotalSeconds int64
+	App           string
+	TotalDuration float64
+	EventCount    int64
 }
 
 func (q *Queries) GetAppStats(ctx context.Context, arg GetAppStatsParams) ([]GetAppStatsRow, error) {
@@ -61,7 +50,7 @@ func (q *Queries) GetAppStats(ctx context.Context, arg GetAppStatsParams) ([]Get
 	var items []GetAppStatsRow
 	for rows.Next() {
 		var i GetAppStatsRow
-		if err := rows.Scan(&i.App, &i.EventCount, &i.TotalSeconds); err != nil {
+		if err := rows.Scan(&i.App, &i.TotalDuration, &i.EventCount); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -70,25 +59,6 @@ func (q *Queries) GetAppStats(ctx context.Context, arg GetAppStatsParams) ([]Get
 		return nil, err
 	}
 	return items, nil
-}
-
-const getEventByID = `-- name: GetEventByID :one
-SELECT id, timestamp, duration, app, title, bucket_id, created_at FROM activity_events WHERE id = $1
-`
-
-func (q *Queries) GetEventByID(ctx context.Context, id int64) (ActivityEvent, error) {
-	row := q.db.QueryRow(ctx, getEventByID, id)
-	var i ActivityEvent
-	err := row.Scan(
-		&i.ID,
-		&i.Timestamp,
-		&i.Duration,
-		&i.App,
-		&i.Title,
-		&i.BucketID,
-		&i.CreatedAt,
-	)
-	return i, err
 }
 
 const getEventsByApp = `-- name: GetEventsByApp :many
@@ -131,53 +101,20 @@ func (q *Queries) GetEventsByApp(ctx context.Context, arg GetEventsByAppParams) 
 	return items, nil
 }
 
-const getEventsByTimeRange = `-- name: GetEventsByTimeRange :many
-SELECT id, timestamp, duration, app, title, bucket_id, created_at FROM activity_events
-WHERE timestamp >= $1 AND timestamp < $2
-ORDER BY timestamp DESC
-`
-
-type GetEventsByTimeRangeParams struct {
-	Timestamp   pgtype.Timestamptz
-	Timestamp_2 pgtype.Timestamptz
-}
-
-func (q *Queries) GetEventsByTimeRange(ctx context.Context, arg GetEventsByTimeRangeParams) ([]ActivityEvent, error) {
-	rows, err := q.db.Query(ctx, getEventsByTimeRange, arg.Timestamp, arg.Timestamp_2)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []ActivityEvent
-	for rows.Next() {
-		var i ActivityEvent
-		if err := rows.Scan(
-			&i.ID,
-			&i.Timestamp,
-			&i.Duration,
-			&i.App,
-			&i.Title,
-			&i.BucketID,
-			&i.CreatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const getRecentEvents = `-- name: GetRecentEvents :many
 SELECT id, timestamp, duration, app, title, bucket_id, created_at FROM activity_events
+WHERE timestamp >= $1
 ORDER BY timestamp DESC
-LIMIT $1
+LIMIT $2
 `
 
-func (q *Queries) GetRecentEvents(ctx context.Context, limit int32) ([]ActivityEvent, error) {
-	rows, err := q.db.Query(ctx, getRecentEvents, limit)
+type GetRecentEventsParams struct {
+	Timestamp pgtype.Timestamptz
+	Limit     int32
+}
+
+func (q *Queries) GetRecentEvents(ctx context.Context, arg GetRecentEventsParams) ([]ActivityEvent, error) {
+	rows, err := q.db.Query(ctx, getRecentEvents, arg.Timestamp, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
@@ -202,50 +139,4 @@ func (q *Queries) GetRecentEvents(ctx context.Context, limit int32) ([]ActivityE
 		return nil, err
 	}
 	return items, nil
-}
-
-const getTotalTimeByApp = `-- name: GetTotalTimeByApp :one
-SELECT COALESCE(SUM(duration), 0) as total_seconds
-FROM activity_events
-WHERE app = $1 AND timestamp >= $2 AND timestamp < $3
-`
-
-type GetTotalTimeByAppParams struct {
-	App         string
-	Timestamp   pgtype.Timestamptz
-	Timestamp_2 pgtype.Timestamptz
-}
-
-func (q *Queries) GetTotalTimeByApp(ctx context.Context, arg GetTotalTimeByAppParams) (interface{}, error) {
-	row := q.db.QueryRow(ctx, getTotalTimeByApp, arg.App, arg.Timestamp, arg.Timestamp_2)
-	var total_seconds interface{}
-	err := row.Scan(&total_seconds)
-	return total_seconds, err
-}
-
-const insertActivityEvent = `-- name: InsertActivityEvent :exec
-INSERT INTO activity_events (id, timestamp, duration, app, title, bucket_id)
-VALUES ($1, $2, $3, $4, $5, $6)
-ON CONFLICT (id) DO NOTHING
-`
-
-type InsertActivityEventParams struct {
-	ID        int64
-	Timestamp pgtype.Timestamptz
-	Duration  float64
-	App       string
-	Title     pgtype.Text
-	BucketID  string
-}
-
-func (q *Queries) InsertActivityEvent(ctx context.Context, arg InsertActivityEventParams) error {
-	_, err := q.db.Exec(ctx, insertActivityEvent,
-		arg.ID,
-		arg.Timestamp,
-		arg.Duration,
-		arg.App,
-		arg.Title,
-		arg.BucketID,
-	)
-	return err
 }
