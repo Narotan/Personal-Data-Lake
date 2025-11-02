@@ -1,0 +1,12 @@
+[Unit]
+Description=ActivityWatch Data Collector Timer
+Requires=aw-client@%i.service
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=5min
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+
