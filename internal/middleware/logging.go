@@ -3,6 +3,7 @@ package middleware
 import (
 	"DataLake/internal/logger"
 	"DataLake/internal/metrics"
+	"fmt"
 	"net/http"
 	"time"
 )
@@ -58,7 +59,7 @@ func Logging(next http.Handler) http.Handler {
 		metrics.HTTPRequestsTotal.WithLabelValues(
 			r.Method,
 			r.URL.Path,
-			http.StatusText(wrapped.statusCode),
+			fmt.Sprintf("%d", wrapped.statusCode),
 		).Inc()
 
 		metrics.HTTPRequestDuration.WithLabelValues(
