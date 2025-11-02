@@ -3,6 +3,7 @@ package server
 import (
 	"DataLake/internal/middleware"
 	"DataLake/server/handlers"
+	"net/http"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
@@ -21,8 +22,8 @@ func (s *Server) routes() {
 
 	// ActivityWatch
 	awHandler := handlers.NewActivityWatchHandler(s.store.ActivityWatch, &s.logger)
-	s.mux.HandleFunc("/api/activitywatch/events", awHandler.HandleEvents)
-	s.mux.HandleFunc("/api/activitywatch/stats", awHandler.HandleStats)
+	s.mux.Handle("/api/activitywatch/events", middleware.Logging(http.HandlerFunc(awHandler.HandleEvents)))
+	s.mux.Handle("/api/activitywatch/stats", middleware.Logging(http.HandlerFunc(awHandler.HandleStats)))
 
 	// Metrics
 	s.mux.Handle("/metrics", promhttp.Handler())
