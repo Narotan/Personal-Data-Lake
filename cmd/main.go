@@ -1,8 +1,6 @@
 package main
 
 import (
-	"DataLake/googlecalendar"
-	"DataLake/googlefit"
 	"os"
 
 	wakatimeauth "DataLake/auth/wakatime"
@@ -10,8 +8,8 @@ import (
 	internal_db "DataLake/internal/db"
 	"DataLake/internal/logger"
 	"DataLake/internal/metrics"
+	"DataLake/scheduler"
 	"DataLake/server"
-	wakatime_api "DataLake/wakatime"
 
 	"github.com/joho/godotenv"
 	uuid "github.com/satori/go.uuid"
@@ -50,48 +48,14 @@ func main() {
 	fullURL := wakatimeProvider.GetAuthURL("state")
 	log.Info().Str("auth_url", fullURL).Msg("oauth authorization url generated")
 
-	go func() {
-		userID := uuid.Must(uuid.FromString("00000000-0000-0000-0000-000000000001"))
+	// Создаем userID для scheduler
+	userID := uuid.Must(uuid.FromString("00000000-0000-0000-0000-000000000001"))
 
-		dailySummaries, err := wakatime_api.FetchSummaries()
-		if err != nil {
-			log.Error().Err(err).Msg("error fetching summaries")
-			return
-		}
+	// Запускаем scheduler в отдельной goroutine
+	sched := scheduler.NewScheduler(store, &log, userID)
+	go sched.Start()
 
-		if err := wakatime_api.SaveSummaries(store, dailySummaries, userID); err != nil {
-			log.Error().Err(err).Msg("error saving summaries")
-		} else {
-			log.Info().Int("count", len(dailySummaries)).Msg("successfully saved summaries")
-		}
-	}()
-
-	go func() {
-		userID := uuid.Must(uuid.FromString("00000000-0000-0000-0000-000000000001"))
-
-		response, err := googlefit.FetchSummaries(7)
-		if err != nil {
-			log.Error().Err(err).Msg("failed to fetch google fit summaries")
-			return
-		}
-
-		if err := googlefit.SaveSummaries(store, response, userID); err != nil {
-			log.Error().Err(err).Msg("error saving google fit summaries")
-		} else {
-			log.Info().Msg("successfully saved google fit summaries")
-		}
-	}()
-
-	go func() {
-		userID := uuid.Must(uuid.FromString("00000000-0000-0000-0000-000000000001"))
-
-		if err := googlecalendar.FetchAndStoreEvents(store, 30, userID); err != nil {
-			log.Error().Err(err).Msg("failed to fetch and store google calendar events")
-		} else {
-			log.Info().Msg("successfully saved google calendar events")
-		}
-	}()
-
+	// Запускаем сервер
 	srv := server.NewServer(store)
 
 	if err := srv.Run(); err != nil {
