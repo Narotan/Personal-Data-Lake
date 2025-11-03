@@ -1,6 +1,7 @@
 package server
 
 import (
+	v1 "DataLake/api/v1"
 	internal_db "DataLake/internal/db"
 	"DataLake/internal/logger"
 	"net/http"
@@ -21,8 +22,8 @@ func NewServer(store *internal_db.Store) *Server {
 		mux:    http.NewServeMux(),
 		logger: log,
 	}
-
-	s.routes()
+	apiRouter := v1.NewRouter(s.store, &s.logger)
+	s.routes(apiRouter)
 	return s
 }
 

@@ -8,7 +8,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-func (s *Server) routes() {
+func (s *Server) routes(apiRouter http.Handler) {
 	// WakaTime OAuth
 	s.mux.Handle("/callback", middleware.Logging(handlers.HandleCallback()))
 
@@ -20,10 +20,8 @@ func (s *Server) routes() {
 	s.mux.Handle("/auth/googlecalendar", middleware.Logging(handlers.HandleGoogleCalendarAuth()))
 	s.mux.Handle("/oauth2callback/calendar", middleware.Logging(handlers.HandleGoogleCalendarCallback()))
 
-	// ActivityWatch
-	awHandler := handlers.NewActivityWatchHandler(s.store.ActivityWatch, &s.logger)
-	s.mux.Handle("/api/activitywatch/events", middleware.Logging(http.HandlerFunc(awHandler.HandleEvents)))
-	s.mux.Handle("/api/activitywatch/stats", middleware.Logging(http.HandlerFunc(awHandler.HandleStats)))
+	// API v1
+	s.mux.Handle("/api/v1/", http.StripPrefix("/api/v1", apiRouter))
 
 	// Metrics
 	s.mux.Handle("/metrics", promhttp.Handler())

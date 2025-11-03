@@ -61,3 +61,17 @@ FROM googlefit_daily_stats
 WHERE user_id = $1
   AND date >= CURRENT_DATE - INTERVAL '30 days';
 
+
+-- name: GetGoogleFitDailyStatsByDateRange :many
+SELECT
+    date,
+    steps,
+    distance
+FROM
+    googlefit_daily_stats
+WHERE
+    user_id = $1
+  AND date >= $2
+  AND date <= $3
+ORDER BY
+    date DESC;

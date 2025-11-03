@@ -480,6 +480,46 @@ func (q *Queries) GetDayByID(ctx context.Context, id int32) (WakatimeDay, error)
 	return i, err
 }
 
+const getDaysByDateRange = `-- name: GetDaysByDateRange :many
+SELECT id, user_id, date, total_seconds, text, created_at, updated_at FROM wakatime_days
+WHERE user_id = $1 AND date BETWEEN $2 AND $3
+ORDER BY date DESC
+`
+
+type GetDaysByDateRangeParams struct {
+	UserID pgtype.UUID
+	Date   pgtype.Date
+	Date_2 pgtype.Date
+}
+
+func (q *Queries) GetDaysByDateRange(ctx context.Context, arg GetDaysByDateRangeParams) ([]WakatimeDay, error) {
+	rows, err := q.db.Query(ctx, getDaysByDateRange, arg.UserID, arg.Date, arg.Date_2)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []WakatimeDay
+	for rows.Next() {
+		var i WakatimeDay
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Date,
+			&i.TotalSeconds,
+			&i.Text,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getProjectByID = `-- name: GetProjectByID :one
 SELECT id, day_id, name, total_seconds, percent, text, created_at FROM wakatime_projects WHERE id = $1
 `
@@ -518,6 +558,76 @@ func (q *Queries) GetSummaryByID(ctx context.Context, id int32) (WakatimeSummary
 		&i.CreatedAt,
 	)
 	return i, err
+}
+
+const getWakatimeStatsByDateRange = `-- name: GetWakatimeStatsByDateRange :many
+SELECT
+    d.id as day_id,
+    d.date,
+    d.total_seconds,
+    d.text as day_text,
+    p.name as project_name,
+    p.total_seconds as project_seconds,
+    l.name as language_name,
+    l.total_seconds as language_seconds
+FROM
+    wakatime_days d
+        LEFT JOIN
+    wakatime_projects p ON d.id = p.day_id
+        LEFT JOIN
+    wakatime_languages l ON d.id = l.day_id
+WHERE
+    d.user_id = $1
+  AND d.date >= $2
+  AND d.date <= $3
+ORDER BY
+    d.date DESC, p.total_seconds DESC, l.total_seconds DESC
+`
+
+type GetWakatimeStatsByDateRangeParams struct {
+	UserID pgtype.UUID
+	Date   pgtype.Date
+	Date_2 pgtype.Date
+}
+
+type GetWakatimeStatsByDateRangeRow struct {
+	DayID           int32
+	Date            pgtype.Date
+	TotalSeconds    float64
+	DayText         pgtype.Text
+	ProjectName     pgtype.Text
+	ProjectSeconds  pgtype.Float8
+	LanguageName    pgtype.Text
+	LanguageSeconds pgtype.Float8
+}
+
+func (q *Queries) GetWakatimeStatsByDateRange(ctx context.Context, arg GetWakatimeStatsByDateRangeParams) ([]GetWakatimeStatsByDateRangeRow, error) {
+	rows, err := q.db.Query(ctx, getWakatimeStatsByDateRange, arg.UserID, arg.Date, arg.Date_2)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetWakatimeStatsByDateRangeRow
+	for rows.Next() {
+		var i GetWakatimeStatsByDateRangeRow
+		if err := rows.Scan(
+			&i.DayID,
+			&i.Date,
+			&i.TotalSeconds,
+			&i.DayText,
+			&i.ProjectName,
+			&i.ProjectSeconds,
+			&i.LanguageName,
+			&i.LanguageSeconds,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const listDaysByUser = `-- name: ListDaysByUser :many
