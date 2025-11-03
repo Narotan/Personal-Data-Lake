@@ -158,6 +158,63 @@ func (q *Queries) GetBusiestDays(ctx context.Context, arg GetBusiestDaysParams) 
 	return items, nil
 }
 
+const getCalendarEventsByDateRange = `-- name: GetCalendarEventsByDateRange :many
+SELECT
+    event_id,
+    summary,
+    description,
+    start_time,
+    end_time
+FROM
+    googlecalendar_events
+WHERE
+    user_id = $1
+  AND start_time >= $2
+  AND start_time <= $3
+ORDER BY
+    start_time ASC
+`
+
+type GetCalendarEventsByDateRangeParams struct {
+	UserID      pgtype.UUID
+	StartTime   pgtype.Timestamptz
+	StartTime_2 pgtype.Timestamptz
+}
+
+type GetCalendarEventsByDateRangeRow struct {
+	EventID     string
+	Summary     pgtype.Text
+	Description pgtype.Text
+	StartTime   pgtype.Timestamptz
+	EndTime     pgtype.Timestamptz
+}
+
+func (q *Queries) GetCalendarEventsByDateRange(ctx context.Context, arg GetCalendarEventsByDateRangeParams) ([]GetCalendarEventsByDateRangeRow, error) {
+	rows, err := q.db.Query(ctx, getCalendarEventsByDateRange, arg.UserID, arg.StartTime, arg.StartTime_2)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetCalendarEventsByDateRangeRow
+	for rows.Next() {
+		var i GetCalendarEventsByDateRangeRow
+		if err := rows.Scan(
+			&i.EventID,
+			&i.Summary,
+			&i.Description,
+			&i.StartTime,
+			&i.EndTime,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getDailyEventsSummary = `-- name: GetDailyEventsSummary :many
 
 SELECT

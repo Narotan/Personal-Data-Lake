@@ -79,6 +79,53 @@ func (q *Queries) GetDailyStatByDate(ctx context.Context, arg GetDailyStatByDate
 	return i, err
 }
 
+const getGoogleFitDailyStatsByDateRange = `-- name: GetGoogleFitDailyStatsByDateRange :many
+SELECT
+    date,
+    steps,
+    distance
+FROM
+    googlefit_daily_stats
+WHERE
+    user_id = $1
+  AND date >= $2
+  AND date <= $3
+ORDER BY
+    date DESC
+`
+
+type GetGoogleFitDailyStatsByDateRangeParams struct {
+	UserID pgtype.UUID
+	Date   pgtype.Date
+	Date_2 pgtype.Date
+}
+
+type GetGoogleFitDailyStatsByDateRangeRow struct {
+	Date     pgtype.Date
+	Steps    pgtype.Int4
+	Distance pgtype.Float8
+}
+
+func (q *Queries) GetGoogleFitDailyStatsByDateRange(ctx context.Context, arg GetGoogleFitDailyStatsByDateRangeParams) ([]GetGoogleFitDailyStatsByDateRangeRow, error) {
+	rows, err := q.db.Query(ctx, getGoogleFitDailyStatsByDateRange, arg.UserID, arg.Date, arg.Date_2)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetGoogleFitDailyStatsByDateRangeRow
+	for rows.Next() {
+		var i GetGoogleFitDailyStatsByDateRangeRow
+		if err := rows.Scan(&i.Date, &i.Steps, &i.Distance); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getMonthlyAverage = `-- name: GetMonthlyAverage :one
 SELECT
     AVG(steps) as avg_steps,

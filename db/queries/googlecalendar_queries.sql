@@ -119,3 +119,19 @@ FROM (
     GROUP BY DATE(start_time)
 ) AS daily_stats;
 
+
+-- name: GetCalendarEventsByDateRange :many
+SELECT
+    event_id,
+    summary,
+    description,
+    start_time,
+    end_time
+FROM
+    googlecalendar_events
+WHERE
+    user_id = $1
+  AND start_time >= $2
+  AND start_time <= $3
+ORDER BY
+    start_time ASC;

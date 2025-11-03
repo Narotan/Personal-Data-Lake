@@ -143,3 +143,31 @@ SELECT * FROM wakatime_summaries WHERE user_id = $1 ORDER BY start_time DESC;
 
 -- name: DeleteSummary :exec
 DELETE FROM wakatime_summaries WHERE id = $1;
+
+-- name: GetDaysByDateRange :many
+SELECT * FROM wakatime_days
+WHERE user_id = $1 AND date BETWEEN $2 AND $3
+ORDER BY date DESC;
+
+-- name: GetWakatimeStatsByDateRange :many
+SELECT
+    d.id as day_id,
+    d.date,
+    d.total_seconds,
+    d.text as day_text,
+    p.name as project_name,
+    p.total_seconds as project_seconds,
+    l.name as language_name,
+    l.total_seconds as language_seconds
+FROM
+    wakatime_days d
+        LEFT JOIN
+    wakatime_projects p ON d.id = p.day_id
+        LEFT JOIN
+    wakatime_languages l ON d.id = l.day_id
+WHERE
+    d.user_id = $1
+  AND d.date >= $2
+  AND d.date <= $3
+ORDER BY
+    d.date DESC, p.total_seconds DESC, l.total_seconds DESC;
