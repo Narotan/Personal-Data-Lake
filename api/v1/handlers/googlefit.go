@@ -4,6 +4,7 @@ import (
 	models_api_v1 "DataLake/api/v1/models"
 	internal_db "DataLake/internal/db"
 	googlefit_db "DataLake/internal/db/googlefit"
+	"DataLake/internal/middleware"
 	"encoding/json"
 	"net/http"
 	"time"
@@ -48,7 +49,20 @@ func (h *GoogleFitHandler) GetStats(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	userID := uuid.Must(uuid.FromString("00000000-0000-0000-0000-000000000001"))
+	userIDStr, ok := middleware.GetUserID(r.Context())
+	if !ok || userIDStr == "" {
+		h.logger.Error().Msg("Failed to get user ID from context")
+		http.Error(w, `{"error": "Unauthorized: User ID not found in context"}`, http.StatusUnauthorized)
+		return
+	}
+
+	userID, err := uuid.FromString(userIDStr)
+	if err != nil {
+		h.logger.Error().Err(err).Msg("Invalid user ID format")
+		http.Error(w, `{"error": "Internal Server Error: Invalid user ID format"}`, http.StatusInternalServerError)
+		return
+	}
+
 	var uidArr [16]byte
 	copy(uidArr[:], userID.Bytes())
 	dbResult, err := h.store.GoogleFit.GetGoogleFitDailyStatsByDateRange(r.Context(), googlefit_db.GetGoogleFitDailyStatsByDateRangeParams{

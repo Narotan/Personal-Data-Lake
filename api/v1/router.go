@@ -18,17 +18,16 @@ func NewRouter(store *internal_db.Store, logger *zerolog.Logger) http.Handler {
 	activityWatchHandler := handlers_api_v1.NewActivityWatchHandler(store, logger)
 
 	// wakatime endpoints
-	mux.Handle("/wakatime/stats", http.HandlerFunc(wakaTimeHandler.GetStats))
+	mux.Handle("/wakatime/stats", middleware.APIKeyAuth(http.HandlerFunc(wakaTimeHandler.GetStats)))
 
 	// googlefit endpoints
-	mux.Handle("/googlefit/stats", http.HandlerFunc(googleFitHandler.GetStats))
-
+	mux.Handle("/googlefit/stats", middleware.APIKeyAuth(http.HandlerFunc(googleFitHandler.GetStats)))
 	// googlecalendar endpoints
-	mux.Handle("/googlecalendar/events", http.HandlerFunc(googleCalendar.GetEvents))
+	mux.Handle("/googlecalendar/events", middleware.APIKeyAuth(http.HandlerFunc(googleCalendar.GetEvents)))
 
 	// activitywatch endpoints
-	mux.Handle("/activitywatch/events", http.HandlerFunc(activityWatchHandler.HandleEvents))
-	mux.Handle("/activitywatch/stats", http.HandlerFunc(activityWatchHandler.GetStats))
+	mux.Handle("/activitywatch/events", middleware.APIKeyAuth(http.HandlerFunc(activityWatchHandler.HandleEvents)))
+	mux.Handle("/activitywatch/stats", middleware.APIKeyAuth(http.HandlerFunc(activityWatchHandler.GetStats)))
 
 	return middleware.Logging(mux)
 }
