@@ -49,11 +49,23 @@ func main() {
 	log.Info().Str("auth_url", fullURL).Msg("oauth authorization url generated")
 
 	// Создаем userID для scheduler
-	userID := uuid.Must(uuid.FromString("00000000-0000-0000-0000-000000000001"))
+	userIDStr := os.Getenv("API_USER_ID")
+	if userIDStr == "" {
+		log.Fatal().Msg("API_USER_ID environment variable not set")
+	}
+	userID, err := uuid.FromString(userIDStr)
+	if err != nil {
+		log.Fatal().Err(err).Msg("Invalid API_USER_ID format")
+	}
 
-	// Запускаем scheduler в отдельной goroutine
-	sched := scheduler.NewScheduler(store, &log, userID)
-	go sched.Start()
+	// Запускаем scheduler в отдельной goroutine, если включено
+	if os.Getenv("ENABLE_SCHEDULER") == "true" {
+		sched := scheduler.NewScheduler(store, &log, userID)
+		go sched.Start()
+		log.Info().Msg("Scheduler enabled and started")
+	} else {
+		log.Info().Msg("Scheduler is disabled")
+	}
 
 	// Запускаем сервер
 	srv := server.NewServer(store)

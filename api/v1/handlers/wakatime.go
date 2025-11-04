@@ -4,6 +4,7 @@ import (
 	models_api_v1 "DataLake/api/v1/models"
 	internal_db "DataLake/internal/db"
 	wakatime_db "DataLake/internal/db/wakatime"
+	"DataLake/internal/middleware"
 	"encoding/json"
 	"net/http"
 	"sort"
@@ -52,9 +53,25 @@ func (h *WakatimeHandler) GetStats(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	userID := uuid.Must(uuid.FromString("00000000-0000-0000-0000-000000000001"))
+	userIDStr, ok := middleware.GetUserID(r.Context())
+	if !ok || userIDStr == "" {
+		h.logger.Error().Msg("Failed to get user ID from context")
+		http.Error(w, `{"error": "Unauthorized: User ID not found in context"}`, http.StatusUnauthorized)
+		return
+	}
+
+	userID, err := uuid.FromString(userIDStr)
+	if err != nil {
+		h.logger.Error().Err(err).Msg("Invalid user ID format")
+		http.Error(w, `{"error": "Internal Server Error: Invalid user ID format"}`, http.StatusInternalServerError)
+		return
+	}
+
+	var userIDBytes [16]byte
+	copy(userIDBytes[:], userID.Bytes())
+
 	dbResult, err := h.store.WakaTime.GetWakatimeStatsByDateRange(r.Context(), wakatime_db.GetWakatimeStatsByDateRangeParams{
-		UserID: pgtype.UUID{Bytes: userID, Valid: true},
+		UserID: pgtype.UUID{Bytes: userIDBytes, Valid: true},
 		Date:   pgtype.Date{Time: startDate, Valid: true},
 		Date_2: pgtype.Date{Time: endDate, Valid: true},
 	})
