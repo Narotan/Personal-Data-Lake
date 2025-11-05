@@ -102,6 +102,7 @@ make stop
 - [ ] **Data Export** - экспорт собранных данных за n-ый период в CSV, JSON, Excel
 - [ ] **Add new API endpoints** - расширенная аналитика и инсайты
 - [ ] **Connect new application** - расширение списка источников данных
+- [ ] **Integrate AI model to auto analyze activity summary** - подключить ИИ для нахождения зависимостей, исходя из общей активности 
 
 
 ---
