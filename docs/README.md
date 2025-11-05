@@ -43,7 +43,7 @@
 ## ⚡ Быстрый старт
 
 ```bash
-git clone <your-repo>
+git clone https://github.com/Narotan/Personal-Data-Lake.git
 cd data-lake
 make setup    # Создать .env
 make start    # Запустить всё
