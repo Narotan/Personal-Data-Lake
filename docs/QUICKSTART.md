@@ -17,7 +17,7 @@
 ### Шаг 1: Клонировать репозиторий
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/Narotan/Personal-Data-Lake.git
 cd data-lake
 ```
 
