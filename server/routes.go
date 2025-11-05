@@ -9,6 +9,12 @@ import (
 )
 
 func (s *Server) routes(apiRouter http.Handler) {
+	// Health check
+	s.mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("OK"))
+	})
+
 	// WakaTime OAuth
 	s.mux.Handle("/callback", middleware.Logging(handlers.HandleCallback()))
 
