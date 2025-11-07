@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 )
 
@@ -23,6 +24,15 @@ func NewProvider(clientID, clientSecret, redirectURI string) *Provider {
 		clientID:     clientID,
 		clientSecret: clientSecret,
 		redirectURI:  redirectURI,
+	}
+}
+
+// NewProviderFromEnv создаёт провайдер из переменных окружения
+func NewProviderFromEnv() *Provider {
+	return &Provider{
+		clientID:     os.Getenv("CLIENT_ID"),
+		clientSecret: os.Getenv("CLIENT_SECRET"),
+		redirectURI:  os.Getenv("REDIRECT_URI"),
 	}
 }
 

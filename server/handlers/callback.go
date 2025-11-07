@@ -13,14 +13,37 @@ func HandleCallback() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		log := logger.Get()
 
+		// Логируем весь URL для отладки
+		log.Info().
+			Str("full_url", r.URL.String()).
+			Str("query", r.URL.RawQuery).
+			Msg("received callback request")
+
 		code := r.URL.Query().Get("code")
-		if code == "" {
-			log.Error().Msg("missing authorization code")
-			http.Error(w, "Missing code", http.StatusBadRequest)
+		state := r.URL.Query().Get("state")
+		errorParam := r.URL.Query().Get("error")
+		errorDescription := r.URL.Query().Get("error_description")
+
+		// Если WakaTime вернул ошибку
+		if errorParam != "" {
+			log.Error().
+				Str("error", errorParam).
+				Str("error_description", errorDescription).
+				Msg("oauth error from wakatime")
+			http.Error(w, fmt.Sprintf("OAuth Error: %s - %s", errorParam, errorDescription), http.StatusBadRequest)
 			return
 		}
 
-		log.Info().Msg("received oauth callback")
+		if code == "" {
+			log.Error().Msg("missing authorization code")
+			http.Error(w, "Missing code parameter. Please go through the authorization flow: check logs for auth_url", http.StatusBadRequest)
+			return
+		}
+
+		log.Info().
+			Str("code_preview", code[:min(10, len(code))]+"...").
+			Str("state", state).
+			Msg("received oauth callback with code")
 
 		wakatimeProvider := wakatimeauth.NewProvider(
 			os.Getenv("CLIENT_ID"),
@@ -48,4 +71,11 @@ func HandleCallback() http.HandlerFunc {
 
 		fmt.Fprintf(w, "Authentication successful! Token saved. You can close this window.")
 	}
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }

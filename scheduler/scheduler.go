@@ -26,11 +26,11 @@ func NewScheduler(store *internal_db.Store, logger *zerolog.Logger, userID uuid.
 }
 
 func (s *Scheduler) Start() {
-	s.logger.Info().Msg("Scheduler started - будет собирать данные каждые 30 минут")
+	s.logger.Info().Msg("Scheduler started - будет собирать данные каждую минуту (режим тестирования)")
 
 	s.runCollectors()
 
-	ticker := time.NewTicker(30 * time.Minute)
+	ticker := time.NewTicker(1 * time.Minute)
 	defer ticker.Stop()
 
 	for range ticker.C {
