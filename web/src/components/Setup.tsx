@@ -57,7 +57,7 @@ export function Setup() {
             href="https://wakatime.com/oauth/authorize?client_id=rtf2GDb7hmgMXGN7MsDupbSn&redirect_uri=http%3A%2F%2Flocalhost%3A8080%2Fcallback&response_type=code&state=wakatime"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white rounded-lg font-medium transition-all shadow-lg shadow-blue-500/20"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-medium transition-all"
           >
             {status.wakatime ? "Reconnect WakaTime" : "Connect WakaTime"} <ExternalLink className="w-4 h-4" />
           </a>
@@ -94,7 +94,7 @@ export function Setup() {
             href="https://accounts.google.com/o/oauth2/v2/auth?access_type=offline&client_id=511018240872-sc6t6pctjkivoolcggr49v4nl3267dqa.apps.googleusercontent.com&include_granted_scopes=true&prompt=consent&redirect_uri=http%3A%2F%2Flocalhost%3A8080%2Foauth2callback&response_type=code&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Ffitness.activity.read+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Ffitness.body.read+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Ffitness.sleep.read+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Ffitness.location.read&state=googlefit"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white rounded-lg font-medium transition-all shadow-lg shadow-blue-500/20"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-medium transition-all"
           >
             {status.googlefit ? "Reconnect Google Fit" : "Connect Google Fit"} <ExternalLink className="w-4 h-4" />
           </a>

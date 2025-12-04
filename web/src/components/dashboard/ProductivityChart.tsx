@@ -1,8 +1,9 @@
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Card } from "../ui/Card";
 import { DailyStat } from "../../lib/api";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, differenceInDays } from "date-fns";
 import { Skeleton } from "../ui/Skeleton";
+import { aggregateByMonth } from "../../lib/utils";
 
 interface ProductivityChartProps {
   data: DailyStat[];
@@ -36,10 +37,26 @@ export function ProductivityChart({ data, loading }: ProductivityChartProps) {
     );
   }
 
-  const chartData = data.map(day => ({
-    name: format(parseISO(day.date), 'MMM dd'),
-    coding: Number((day.total_seconds / 3600).toFixed(2)),
-  })).reverse();
+  // Определяем нужно ли агрегировать по месяцам
+  const shouldAggregateByMonth = data.length > 1 && 
+    differenceInDays(
+      parseISO(data[data.length - 1]?.date || format(new Date(), 'yyyy-MM-dd')), 
+      parseISO(data[0]?.date || format(new Date(), 'yyyy-MM-dd'))
+    ) > 90;
+  
+  let chartData;
+  if (shouldAggregateByMonth) {
+    const aggregated = aggregateByMonth(data);
+    chartData = aggregated.map(month => ({
+      name: format(parseISO(month.date), 'MMM yyyy'),
+      coding: Number((month.total_seconds / 3600).toFixed(2)),
+    }));
+  } else {
+    chartData = data.map(day => ({
+      name: format(parseISO(day.date), 'MMM dd'),
+      coding: Number((day.total_seconds / 3600).toFixed(2)),
+    }));
+  }
 
   const hasData = data.length > 0;
 
@@ -99,7 +116,7 @@ export function ProductivityChart({ data, loading }: ProductivityChartProps) {
               strokeWidth={3}
               fillOpacity={1} 
               fill="url(#colorCoding)" 
-              activeDot={{ r: 6, strokeWidth: 0, fill: '#fff', shadow: '0 0 10px #8b5cf6' }}
+              activeDot={{ r: 6, strokeWidth: 0, fill: '#fff' }}
             />
           </AreaChart>
         </ResponsiveContainer>

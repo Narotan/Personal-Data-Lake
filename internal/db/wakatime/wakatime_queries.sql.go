@@ -588,7 +588,7 @@ type GetTopLanguagesByDateRangeParams struct {
 
 type GetTopLanguagesByDateRangeRow struct {
 	Name         string
-	TotalSeconds int64
+	TotalSeconds float64
 }
 
 func (q *Queries) GetTopLanguagesByDateRange(ctx context.Context, arg GetTopLanguagesByDateRangeParams) ([]GetTopLanguagesByDateRangeRow, error) {
@@ -644,7 +644,7 @@ type GetTopProjectsByDateRangeParams struct {
 
 type GetTopProjectsByDateRangeRow struct {
 	Name         string
-	TotalSeconds int64
+	TotalSeconds float64
 }
 
 func (q *Queries) GetTopProjectsByDateRange(ctx context.Context, arg GetTopProjectsByDateRangeParams) ([]GetTopProjectsByDateRangeRow, error) {

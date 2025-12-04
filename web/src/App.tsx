@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Activity, Calendar as CalendarIcon, Code2, Monitor } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Header } from './components/layout/Header';
+import { Sidebar } from './components/layout/Sidebar';
 import { KPICard } from './components/dashboard/KPICard';
 import { ProductivityChart } from './components/dashboard/ProductivityChart';
 import { HealthChart } from './components/dashboard/HealthChart';
@@ -12,8 +13,8 @@ import { TopApplications } from './components/dashboard/TopApplications';
 import { Setup } from './components/Setup';
 import { AuthSuccess } from './components/AuthSuccess';
 import { fetchWakaTimeStats, fetchGoogleFitStats, fetchGoogleCalendarEvents, fetchActivityWatchStats, fetchTopLanguages, fetchTopProjects, DailyStat, DailyFitStat, CalendarEvent, AppStat, AggregatedLanguageStat, AggregatedProjectStat } from './lib/api';
-import { getDateRange, formatDuration } from './lib/utils';
-import { mockWakaTimeData, mockGoogleFitData, mockTopLanguages, mockTopProjects, mockActivityWatchData } from './lib/mockData';
+import { getDateRange, formatDuration, fillMissingDates } from './lib/utils';
+
 
 function App() {
   const [dateRange, setDateRange] = useState('today');
@@ -72,36 +73,35 @@ function App() {
           return false;
         };
 
-        setWakaTimeData(!isEmpty(wakaData) ? wakaData : mockWakaTimeData);
-        setGoogleFitData(!isEmpty(fitData) ? fitData : mockGoogleFitData);
+        setWakaTimeData(wakaData || []);
+        setGoogleFitData(fitData || []);
         
         // Set trend data
         if (wakaTrend) {
-            setProductivityTrendData(!isEmpty(wakaTrend) ? wakaTrend : mockWakaTimeData);
+            setProductivityTrendData(fillMissingDates(wakaTrend || [], trendRange.start_date, trendRange.end_date));
         } else {
-            setProductivityTrendData(!isEmpty(wakaData) ? wakaData : mockWakaTimeData);
+            setProductivityTrendData(fillMissingDates(wakaData || [], trendRange.start_date, trendRange.end_date));
         }
 
         if (fitTrend) {
-            setHealthTrendData(!isEmpty(fitTrend) ? fitTrend : mockGoogleFitData);
+            setHealthTrendData(fillMissingDates(fitTrend || [], trendRange.start_date, trendRange.end_date));
         } else {
-            setHealthTrendData(!isEmpty(fitData) ? fitData : mockGoogleFitData);
+            setHealthTrendData(fillMissingDates(fitData || [], trendRange.start_date, trendRange.end_date));
         }
 
         setCalendarData(calData || []);
-        setActivityWatchData(!isEmpty(awData) ? awData : mockActivityWatchData);
-        setTopLanguages(!isEmpty(langData) ? langData : mockTopLanguages);
-        setTopProjects(!isEmpty(projData) ? projData : mockTopProjects);
+        setActivityWatchData(awData || []);
+        setTopLanguages(langData || []);
+        setTopProjects(projData || []);
       } catch (error) {
         console.error("Failed to fetch data:", error);
-        // Fallback to mock data on error
-        setWakaTimeData(mockWakaTimeData);
-        setProductivityTrendData(mockWakaTimeData);
-        setGoogleFitData(mockGoogleFitData);
-        setHealthTrendData(mockGoogleFitData);
-        setTopLanguages(mockTopLanguages);
-        setTopProjects(mockTopProjects);
-        setActivityWatchData(mockActivityWatchData);
+        setWakaTimeData([]);
+        setProductivityTrendData([]);
+        setGoogleFitData([]);
+        setHealthTrendData([]);
+        setTopLanguages([]);
+        setTopProjects([]);
+        setActivityWatchData([]);
       } finally {
         setLoading(false);
       }
@@ -120,85 +120,94 @@ function App() {
   const totalPCActiveSeconds = activityWatchData.reduce((acc, app) => acc + app.TotalDuration, 0);
 
   return (
-    <div className="min-h-screen bg-background text-white p-4 md:p-8 font-sans selection:bg-primary/30">
-      <div className="max-w-7xl mx-auto space-y-8">
-        {view !== 'auth-success' && (
-          <Header 
-            dateRangeLabel="Today" 
-            currentRange={dateRange}
-            onRangeChange={setDateRange}
-            onSetupClick={() => setView(view === 'dashboard' ? 'setup' : 'dashboard')}
-            isSetupMode={view === 'setup'}
-          />
-        )}
-        
-        {view === 'auth-success' ? (
-          <AuthSuccess onContinue={() => setView('setup')} />
-        ) : view === 'setup' ? (
-          <Setup />
-        ) : (
-          <>
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6"
-            >
-              <KPICard
-                title="Coding Time"
-                value={loading ? "..." : formatDuration(totalCodingSeconds)}
-                subtitle={dateRange === 'today' ? "Today" : "Selected Period"}
-                icon={Code2}
-                color="wakatime"
-              />
-              <KPICard
-                title="Steps"
-                value={loading ? "..." : totalSteps.toLocaleString()}
-                subtitle={dateRange === 'today' ? "Today" : "Selected Period"}
-                icon={Activity}
-                color="googlefit"
-              />
-              <KPICard
-                title="Meetings"
-                value={loading ? "..." : formatDuration(totalMeetingsDuration)}
-                subtitle={`${calendarData.length} events`}
-                icon={CalendarIcon}
-                color="calendar"
-              />
-              <KPICard
-                title="PC Active Time"
-                value={loading ? "..." : formatDuration(totalPCActiveSeconds)}
-                subtitle="ActivityWatch"
-                icon={Monitor}
-                color="activity"
-              />
-            </motion.div>
+    <div className="flex min-h-screen bg-background text-white font-sans selection:bg-primary/30">
+      {view !== 'auth-success' && (
+        <Sidebar 
+            currentView={view === 'auth-success' ? 'dashboard' : view} 
+            onViewChange={(v) => setView(v)} 
+        />
+      )}
+      
+      <main className="flex-1 p-4 md:p-8 overflow-y-auto h-screen">
+        <div className="max-w-7xl mx-auto space-y-8">
+          {view !== 'auth-success' && (
+            <Header 
+              dateRangeLabel="Today" 
+              currentRange={dateRange}
+              onRangeChange={setDateRange}
+              onSetupClick={() => setView(view === 'dashboard' ? 'setup' : 'dashboard')}
+              isSetupMode={view === 'setup'}
+            />
+          )}
+          
+          {view === 'auth-success' ? (
+            <AuthSuccess onContinue={() => setView('setup')} />
+          ) : view === 'setup' ? (
+            <Setup />
+          ) : (
+            <>
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6"
+              >
+                <KPICard
+                  title="Coding Time"
+                  value={loading ? "..." : formatDuration(totalCodingSeconds)}
+                  subtitle={dateRange === 'today' ? "Today" : "Selected Period"}
+                  icon={Code2}
+                  color="wakatime"
+                />
+                <KPICard
+                  title="Steps"
+                  value={loading ? "..." : totalSteps.toLocaleString()}
+                  subtitle={dateRange === 'today' ? "Today" : "Selected Period"}
+                  icon={Activity}
+                  color="googlefit"
+                />
+                <KPICard
+                  title="Meetings"
+                  value={loading ? "..." : formatDuration(totalMeetingsDuration)}
+                  subtitle={`${calendarData.length} events`}
+                  icon={CalendarIcon}
+                  color="calendar"
+                />
+                <KPICard
+                  title="PC Active Time"
+                  value={loading ? "..." : formatDuration(totalPCActiveSeconds)}
+                  subtitle="ActivityWatch"
+                  icon={Monitor}
+                  color="activity"
+                />
+              </motion.div>
 
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="grid grid-cols-1 lg:grid-cols-3 gap-6"
-            >
-              {/* Productivity Section */}
-              <div className="lg:col-span-2 space-y-6">
-                <ProductivityChart data={productivityTrendData} loading={loading} />
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <LanguageDistribution data={topLanguages} loading={loading} />
-                    <TopProjects data={topProjects} loading={loading} />
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+                className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+              >
+                {/* Productivity Section */}
+                <div className="lg:col-span-2 space-y-6">
+                  <ProductivityChart data={productivityTrendData} loading={loading} />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <LanguageDistribution data={topLanguages} loading={loading} />
+                      <TopProjects data={topProjects} loading={loading} />
+                  </div>
+                  <TopApplications data={activityWatchData} loading={loading} />
                 </div>
-                <TopApplications data={activityWatchData} loading={loading} />
-              </div>
 
-              {/* Health & Life Section */}
-              <div className="space-y-6">
-                <HealthChart data={healthTrendData} loading={loading} />
-                <ScheduleTimeline data={calendarData} loading={loading} />
-              </div>
-            </motion.div>
-          </>
-        )}
-      </div>
+                {/* Health & Life Section */}
+                <div className="space-y-6">
+                  <HealthChart data={healthTrendData} loading={loading} />
+                  <ScheduleTimeline data={calendarData} loading={loading} />
+                </div>
+              </motion.div>
+            </>
+          )}
+        </div>
+      </main>
     </div>
   );
 }

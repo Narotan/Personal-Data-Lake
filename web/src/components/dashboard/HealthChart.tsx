@@ -1,8 +1,9 @@
 import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { Card } from "../ui/Card";
 import { DailyFitStat } from "../../lib/api";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, differenceInDays } from "date-fns";
 import { Skeleton } from "../ui/Skeleton";
+import { aggregateByMonth } from "../../lib/utils";
 
 interface HealthChartProps {
   data: DailyFitStat[];
@@ -36,10 +37,26 @@ export function HealthChart({ data, loading }: HealthChartProps) {
     );
   }
 
-  const chartData = data.map(day => ({
-    name: format(parseISO(day.date), 'MMM dd'),
-    steps: day.steps,
-  })).reverse();
+  // Определяем нужно ли агрегировать по месяцам
+  const shouldAggregateByMonth = data.length > 1 && 
+    differenceInDays(
+      parseISO(data[data.length - 1]?.date || format(new Date(), 'yyyy-MM-dd')), 
+      parseISO(data[0]?.date || format(new Date(), 'yyyy-MM-dd'))
+    ) > 90;
+  
+  let chartData;
+  if (shouldAggregateByMonth) {
+    const aggregated = aggregateByMonth(data);
+    chartData = aggregated.map(month => ({
+      name: format(parseISO(month.date), 'MMM yyyy'),
+      steps: Math.round(month.steps),
+    }));
+  } else {
+    chartData = data.map(day => ({
+      name: format(parseISO(day.date), 'MMM dd'),
+      steps: day.steps,
+    }));
+  }
 
   const hasData = data.length > 0;
 

@@ -34,7 +34,7 @@ export function ScheduleTimeline({ data, loading }: ScheduleTimelineProps) {
 
   return (
     <Card className="min-h-[300px] flex flex-col">
-      <h3 className="text-lg font-semibold text-white mb-6">Today's Schedule</h3>
+      <h3 className="text-lg font-semibold text-white mb-6">Schedule</h3>
       
       <div className="space-y-6 relative pl-2">
         {/* Vertical line */}
