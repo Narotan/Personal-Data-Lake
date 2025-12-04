@@ -63,3 +63,22 @@ clean: ## Удалить всё (включая данные)
 	@docker-compose down -v
 	@echo "✅ Всё удалено"
 
+build-aw: ## Собрать ActivityWatch клиент
+	@echo "🔨 Сборка aw-client..."
+	@./scripts/build_aw_client.sh
+	@echo "✅ Готово: ./bin/aw-client"
+
+run-aw: ## Запустить ActivityWatch клиент (собрать данные за последний час)
+	@if [ ! -f bin/aw-client ]; then \
+		echo "⚠️  Сначала собери клиент: make build-aw"; \
+		exit 1; \
+	fi
+	@echo "🚀 Запуск aw-client..."
+	@./bin/aw-client -minutes 60 -api-key "$$(grep API_KEY .env | cut -d'=' -f2 | tr -d '\"')"
+
+install-aw-service: ## Установить aw-client как systemd сервис
+	@echo "📦 Установка systemd сервиса..."
+	@sudo ./scripts/install_service.sh
+	@echo "✅ Сервис установлен"
+	@echo "Проверка: sudo systemctl status aw-client@$$USER.timer"
+
