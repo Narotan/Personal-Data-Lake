@@ -2,7 +2,6 @@
 
 > Self-hosted платформа для сбора и анализа персональной продуктивности с современным веб-интерфейсом
 
-![Status](https://img.shields.io/badge/Status-Production%20Ready-success)
 [![Go Version](https://img.shields.io/badge/Go-1.23+-00ADD8?style=flat&logo=go)](https://golang.org)
 [![React](https://img.shields.io/badge/React-18+-61DAFB?style=flat&logo=react)](https://reactjs.org)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-336791?style=flat&logo=postgresql)](https://postgresql.org)
