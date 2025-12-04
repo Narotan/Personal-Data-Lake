@@ -77,15 +77,15 @@ export function Header({ dateRangeLabel, onRangeChange, currentRange, onSetupCli
           <LayoutDashboard className="w-6 h-6 text-primary" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">Data Lake</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Data Lake</h1>
         </div>
       </div>
       
       <div className="hidden md:block">
-        <h2 className="text-2xl font-bold tracking-tight text-white">
+        <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
             {isSetupMode ? "System Setup" : "Dashboard Overview"}
         </h2>
-        <p className="text-sm text-slate-400">
+        <p className="text-sm text-slate-500 dark:text-slate-400">
             {isSetupMode ? "Configure your data sources" : "Welcome back, here's what's happening"}
         </p>
       </div>
@@ -93,16 +93,16 @@ export function Header({ dateRangeLabel, onRangeChange, currentRange, onSetupCli
       <div className="flex flex-col items-end gap-2 w-full md:w-auto">
         <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end">
             {!isSetupMode && (
-            <div className="flex items-center gap-2 bg-surface/50 p-1 rounded-xl border border-white/5 backdrop-blur-sm overflow-x-auto max-w-full relative">
+            <div className="flex items-center gap-2 bg-white/50 dark:bg-slate-800/50 backdrop-blur-md border border-slate-200/50 dark:border-slate-700/50 p-1 rounded-2xl shadow-sm overflow-x-auto max-w-full relative transition-all">
                 {ranges.map((range) => (
                 <button
                     key={range.value}
                     onClick={() => handleRangeClick(range.value)}
                     className={cn(
-                    "px-3 py-1.5 text-sm font-medium rounded-lg transition-all whitespace-nowrap",
+                    "px-3 py-1.5 text-sm font-medium rounded-xl transition-all whitespace-nowrap relative",
                     (range.value === 'custom' ? isCustomActive : currentRange === range.value)
-                        ? "bg-primary text-white shadow-lg shadow-primary/25"
-                        : "text-slate-400 hover:text-white hover:bg-white/5"
+                        ? "bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-md"
+                        : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-white/10"
                     )}
                 >
                     {range.label}
@@ -113,30 +113,30 @@ export function Header({ dateRangeLabel, onRangeChange, currentRange, onSetupCli
         </div>
 
         {showCustomPicker && (
-            <div ref={pickerRef} className="absolute top-full right-0 mt-2 p-4 bg-surface border border-white/10 rounded-xl shadow-xl z-50 flex flex-col gap-4 w-72 backdrop-blur-xl">
+            <div ref={pickerRef} className="absolute top-full right-0 mt-2 p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-xl z-50 flex flex-col gap-4 w-72 border border-slate-100 dark:border-slate-700">
                 <div className="flex justify-between items-center">
-                    <h3 className="text-sm font-medium text-white">Custom Range</h3>
-                    <button onClick={() => setShowCustomPicker(false)} className="text-slate-400 hover:text-white">
+                    <h3 className="text-sm font-medium text-slate-900 dark:text-white">Custom Range</h3>
+                    <button onClick={() => setShowCustomPicker(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white">
                         <X className="w-4 h-4" />
                     </button>
                 </div>
                 <div className="space-y-2">
                     <div className="flex flex-col gap-1">
-                        <label className="text-xs text-slate-400">Start Date</label>
+                        <label className="text-xs text-slate-500 dark:text-slate-400">Start Date</label>
                         <input 
                             type="date" 
                             value={startDate}
                             onChange={(e) => setStartDate(e.target.value)}
-                            className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary"
+                            className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-primary"
                         />
                     </div>
                     <div className="flex flex-col gap-1">
-                        <label className="text-xs text-slate-400">End Date</label>
+                        <label className="text-xs text-slate-500 dark:text-slate-400">End Date</label>
                         <input 
                             type="date" 
                             value={endDate}
                             onChange={(e) => setEndDate(e.target.value)}
-                            className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-primary"
+                            className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-primary"
                         />
                     </div>
                 </div>

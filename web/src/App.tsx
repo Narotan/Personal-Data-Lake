@@ -14,9 +14,10 @@ import { Setup } from './components/Setup';
 import { AuthSuccess } from './components/AuthSuccess';
 import { fetchWakaTimeStats, fetchGoogleFitStats, fetchGoogleCalendarEvents, fetchActivityWatchStats, fetchTopLanguages, fetchTopProjects, DailyStat, DailyFitStat, CalendarEvent, AppStat, AggregatedLanguageStat, AggregatedProjectStat } from './lib/api';
 import { getDateRange, formatDuration, fillMissingDates } from './lib/utils';
+import { ThemeProvider } from './lib/theme';
 
 
-function App() {
+function AppContent() {
   const [dateRange, setDateRange] = useState('today');
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<'dashboard' | 'setup' | 'auth-success'>('dashboard');
@@ -120,7 +121,8 @@ function App() {
   const totalPCActiveSeconds = activityWatchData.reduce((acc, app) => acc + app.TotalDuration, 0);
 
   return (
-    <div className="flex min-h-screen bg-background text-white font-sans selection:bg-primary/30">
+    <div className="flex min-h-screen bg-gradient-to-br from-[#F2F1EA] via-[#F8F7F4] to-[#FFFFFF] dark:from-background dark:via-background dark:to-background text-slate-900 dark:text-white font-sans selection:bg-primary/30 transition-colors duration-300 relative">
+      <div className="absolute inset-0 bg-grid-pattern pointer-events-none fixed" />
       {view !== 'auth-success' && (
         <Sidebar 
             currentView={view === 'auth-success' ? 'dashboard' : view} 
@@ -128,7 +130,7 @@ function App() {
         />
       )}
       
-      <main className="flex-1 p-4 md:p-8 overflow-y-auto h-screen">
+      <main className="flex-1 p-4 md:p-8 overflow-y-auto h-screen relative z-10">
         <div className="max-w-7xl mx-auto space-y-8">
           {view !== 'auth-success' && (
             <Header 
@@ -210,6 +212,14 @@ function App() {
       </main>
     </div>
   );
+}
+
+function App() {
+  return (
+    <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+      <AppContent />
+    </ThemeProvider>
+  )
 }
 
 export default App

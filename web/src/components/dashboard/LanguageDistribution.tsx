@@ -22,11 +22,11 @@ const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (
-      <div className="bg-slate-800 border border-slate-700 p-3 rounded-lg shadow-xl">
-        <p className="text-slate-300 text-sm mb-1">{data.name}</p>
-        <p className="text-white font-bold">
+      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 rounded-xl shadow-xl">
+        <p className="text-slate-500 dark:text-slate-400 text-sm mb-1">{data.name}</p>
+        <p className="text-slate-900 dark:text-white font-bold">
           {formatDuration(data.total_seconds)}
-          <span className="text-slate-500 text-xs font-normal ml-2">({data.percent.toFixed(1)}%)</span>
+          <span className="text-slate-400 text-xs font-normal ml-2">({data.percent.toFixed(1)}%)</span>
         </p>
       </div>
     );
@@ -63,19 +63,19 @@ export function LanguageDistribution({ data, loading }: LanguageDistributionProp
   };
 
   return (
-    <Card className="min-h-[300px] flex flex-col bg-slate-900/50 backdrop-blur-sm border-slate-800">
-      <h3 className="text-lg font-semibold text-white mb-6">Top Languages</h3>
+    <Card className="min-h-[300px] flex flex-col">
+      <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-6">Top Languages</h3>
       
       {!hasData ? (
-        <div className="flex-1 flex items-center justify-center text-slate-500">
+        <div className="flex-1 flex items-center justify-center text-slate-500 dark:text-slate-400">
           <p>No language data available</p>
         </div>
       ) : (
         <div className="flex-1 w-full min-h-[200px] relative">
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="text-center">
-              <p className="text-2xl font-bold text-white">{totalDuration}</p>
-              <p className="text-xs text-slate-400">Total</p>
+              <p className="text-2xl font-bold text-slate-900 dark:text-white">{totalDuration}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Total</p>
             </div>
           </div>
           <ResponsiveContainer width="100%" height="100%">
@@ -106,7 +106,7 @@ export function LanguageDistribution({ data, loading }: LanguageDistributionProp
                 verticalAlign="bottom" 
                 height={36}
                 formatter={(value) => {
-                    return <span className="text-slate-300 ml-2 text-xs">{value}</span>;
+                    return <span className="text-slate-500 dark:text-slate-400 ml-2 text-xs">{value}</span>;
                 }}
               />
             </PieChart>

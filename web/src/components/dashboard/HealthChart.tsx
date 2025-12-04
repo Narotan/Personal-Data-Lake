@@ -4,6 +4,7 @@ import { DailyFitStat } from "../../lib/api";
 import { format, parseISO, differenceInDays } from "date-fns";
 import { Skeleton } from "../ui/Skeleton";
 import { aggregateByMonth } from "../../lib/utils";
+import { useTheme } from "../../lib/theme";
 
 interface HealthChartProps {
   data: DailyFitStat[];
@@ -13,11 +14,11 @@ interface HealthChartProps {
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-slate-800 border border-slate-700 p-3 rounded-lg shadow-xl">
-        <p className="text-slate-300 text-sm mb-1">{label}</p>
-        <p className="text-emerald-400 font-bold text-lg">
+      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 rounded-xl shadow-xl">
+        <p className="text-slate-500 dark:text-slate-400 text-sm mb-1">{label}</p>
+        <p className="text-emerald-600 dark:text-emerald-400 font-bold text-lg">
           {payload[0].value.toLocaleString()}
-          <span className="text-slate-500 text-xs font-normal ml-2">steps</span>
+          <span className="text-slate-400 text-xs font-normal ml-2">steps</span>
         </p>
       </div>
     );
@@ -26,6 +27,9 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 export function HealthChart({ data, loading }: HealthChartProps) {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+
   if (loading) {
     return (
       <Card className="min-h-[300px] flex flex-col">
@@ -61,19 +65,19 @@ export function HealthChart({ data, loading }: HealthChartProps) {
   const hasData = data.length > 0;
 
   return (
-    <Card className="min-h-[300px] flex flex-col bg-slate-900/50 backdrop-blur-sm border-slate-800">
+    <Card className="min-h-[300px] flex flex-col">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-lg font-semibold text-white">Steps Activity</h3>
-          <p className="text-xs text-slate-400 mt-1">Daily step count</p>
+          <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Steps Activity</h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Daily step count</p>
         </div>
-        <span className="text-xs font-medium text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded-full border border-emerald-400/20">
+        <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/30 px-2 py-1 rounded-full border border-emerald-200 dark:border-emerald-800">
           Goal: 10k
         </span>
       </div>
       
       {!hasData ? (
-        <div className="flex-1 flex items-center justify-center text-slate-500">
+        <div className="flex-1 flex items-center justify-center text-slate-500 dark:text-slate-400">
           <div className="text-center">
             <p className="text-lg mb-2">👟 No activity data</p>
             <p className="text-sm">Connect Google Fit to track your steps.</p>
@@ -85,20 +89,20 @@ export function HealthChart({ data, loading }: HealthChartProps) {
           <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
             <XAxis 
               dataKey="name" 
-              stroke="#64748b" 
+              stroke={isDark ? "#94a3b8" : "#94a3b8"} 
               fontSize={12} 
               tickLine={false} 
               axisLine={false}
               dy={10}
             />
             <YAxis 
-              stroke="#64748b" 
+              stroke={isDark ? "#94a3b8" : "#94a3b8"} 
               fontSize={12} 
               tickLine={false} 
               axisLine={false} 
               tickFormatter={(value) => `${(value / 1000).toFixed(0)}k`}
             />
-            <Tooltip content={<CustomTooltip />} cursor={{ fill: '#334155', opacity: 0.2 }} />
+            <Tooltip content={<CustomTooltip />} cursor={{ fill: isDark ? '#334155' : '#f1f5f9', opacity: 0.2 }} />
             <Bar dataKey="steps" radius={[4, 4, 0, 0]}>
               {chartData.map((entry, index) => (
                 <Cell 

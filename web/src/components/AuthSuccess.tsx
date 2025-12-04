@@ -8,12 +8,12 @@ interface AuthSuccessProps {
 export function AuthSuccess({ onContinue }: AuthSuccessProps) {
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-6">
-      <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mb-6 animate-in zoom-in duration-300">
-        <CheckCircle2 className="w-10 h-10 text-green-400" />
+      <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6 animate-in zoom-in duration-300">
+        <CheckCircle2 className="w-10 h-10 text-green-600" />
       </div>
       
-      <h1 className="text-3xl font-bold text-white mb-4">Authorization Successful!</h1>
-      <p className="text-slate-400 max-w-md mb-8">
+      <h1 className="text-3xl font-bold text-slate-900 mb-4">Authorization Successful!</h1>
+      <p className="text-slate-500 max-w-md mb-8">
         Your account has been successfully connected. Data collection will start automatically in the background.
       </p>
 

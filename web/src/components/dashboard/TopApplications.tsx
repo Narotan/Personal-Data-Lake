@@ -2,6 +2,7 @@ import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis, Cell } from 
 import { Card } from "../ui/Card";
 import { AppStat } from "../../lib/api";
 import { Skeleton } from "../ui/Skeleton";
+import { useTheme } from "../../lib/theme";
 
 interface TopApplicationsProps {
   data: AppStat[];
@@ -11,11 +12,11 @@ interface TopApplicationsProps {
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-slate-800 border border-slate-700 p-3 rounded-lg shadow-xl">
-        <p className="text-slate-300 text-sm mb-1">{label}</p>
-        <p className="text-blue-400 font-bold text-lg">
+      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 rounded-xl shadow-xl">
+        <p className="text-slate-500 dark:text-slate-400 text-sm mb-1">{label}</p>
+        <p className="text-blue-600 dark:text-blue-400 font-bold text-lg">
           {payload[0].value}h
-          <span className="text-slate-500 text-xs font-normal ml-2">active</span>
+          <span className="text-slate-400 text-xs font-normal ml-2">active</span>
         </p>
       </div>
     );
@@ -24,6 +25,9 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 export function TopApplications({ data, loading }: TopApplicationsProps) {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+
   if (loading) {
     return (
       <Card className="min-h-[300px] flex flex-col">
@@ -45,11 +49,11 @@ export function TopApplications({ data, loading }: TopApplicationsProps) {
     }));
 
   return (
-    <Card className="min-h-[300px] flex flex-col bg-slate-900/50 backdrop-blur-sm border-slate-800">
-      <h3 className="text-lg font-semibold text-white mb-6">Top Applications</h3>
+    <Card className="min-h-[300px] flex flex-col">
+      <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-6">Top Applications</h3>
       
       {chartData.length === 0 ? (
-        <div className="flex-1 flex items-center justify-center text-slate-500">
+        <div className="flex-1 flex items-center justify-center text-slate-500 dark:text-slate-400">
           <p>No application data available</p>
         </div>
       ) : (
@@ -61,11 +65,11 @@ export function TopApplications({ data, loading }: TopApplicationsProps) {
                 dataKey="name" 
                 type="category" 
                 width={100}
-                tick={{ fill: '#94a3b8', fontSize: 12 }}
+                tick={{ fill: isDark ? '#94a3b8' : '#64748b', fontSize: 12 }}
                 tickLine={false}
                 axisLine={false}
               />
-              <Tooltip content={<CustomTooltip />} cursor={{ fill: '#334155', opacity: 0.2 }} />
+              <Tooltip content={<CustomTooltip />} cursor={{ fill: isDark ? '#334155' : '#e2e8f0', opacity: 0.5 }} />
               <Bar dataKey="duration" radius={[0, 4, 4, 0]} barSize={24}>
                 {chartData.map((_, index) => (
                   <Cell 

@@ -26,21 +26,21 @@ export function TopProjects({ data, loading }: TopProjectsProps) {
 
   return (
     <Card className="min-h-[300px] flex flex-col">
-      <h3 className="text-lg font-semibold text-white mb-6">Top Projects</h3>
+      <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-6">Top Projects</h3>
       
       <div className="space-y-4 overflow-y-auto max-h-[300px] pr-2 custom-scrollbar">
         {data.length === 0 ? (
-             <div className="text-center text-slate-500 py-8">No project data available</div>
+             <div className="text-center text-slate-500 dark:text-slate-400 py-8">No project data available</div>
         ) : (
             data.map((project) => (
             <div key={project.name} className="space-y-2">
                 <div className="flex justify-between text-sm">
-                <span className="text-slate-200 font-medium truncate max-w-[70%]">{project.name}</span>
-                <span className="text-slate-400">{formatDuration(project.total_seconds)}</span>
+                <span className="text-slate-700 dark:text-slate-200 font-medium truncate max-w-[70%]">{project.name}</span>
+                <span className="text-slate-500 dark:text-slate-400">{formatDuration(project.total_seconds)}</span>
                 </div>
-                <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+                <div className="h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
                 <div 
-                    className="h-full bg-blue-500 rounded-full transition-all duration-500 ease-out"
+                    className="h-full bg-blue-500 dark:bg-blue-400 rounded-full transition-all duration-500 ease-out"
                     style={{ width: `${(project.total_seconds / maxTime) * 100}%` }}
                 />
                 </div>

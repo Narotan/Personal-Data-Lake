@@ -14,7 +14,7 @@ export function Card({ children, className, noPadding = false, ...props }: CardP
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
       className={cn(
-        "bg-surface/50 backdrop-blur-md border border-white/10 rounded-2xl shadow-xl overflow-hidden",
+        "bg-surface rounded-3xl shadow-sm border-none overflow-hidden",
         !noPadding && "p-6",
         className
       )}
