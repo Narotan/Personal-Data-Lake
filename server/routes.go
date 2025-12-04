@@ -15,6 +15,15 @@ func (s *Server) routes(apiRouter http.Handler) {
 		_, _ = w.Write([]byte("OK"))
 	})
 
+	// Setup page (OAuth instructions)
+	s.mux.Handle("/", middleware.Logging(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/" {
+			http.NotFound(w, r)
+			return
+		}
+		http.ServeFile(w, r, "web/setup.html")
+	})))
+
 	// WakaTime OAuth
 	s.mux.Handle("/callback", middleware.Logging(handlers.HandleCallback()))
 
@@ -27,6 +36,7 @@ func (s *Server) routes(apiRouter http.Handler) {
 	s.mux.Handle("/oauth2callback/calendar", middleware.Logging(handlers.HandleGoogleCalendarCallback()))
 
 	// API v1
+	s.mux.Handle("/api/v1/auth/status", middleware.Logging(handlers.HandleAuthStatus()))
 	s.mux.Handle("/api/v1/", http.StripPrefix("/api/v1", apiRouter))
 
 	// Metrics

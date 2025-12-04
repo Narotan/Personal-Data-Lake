@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 )
 
@@ -26,6 +27,15 @@ func NewProvider(clientID, clientSecret, redirectURI string) *Provider {
 	}
 }
 
+// NewProviderFromEnv создаёт провайдер из переменных окружения
+func NewProviderFromEnv() *Provider {
+	return &Provider{
+		clientID:     os.Getenv("CLIENT_ID"),
+		clientSecret: os.Getenv("CLIENT_SECRET"),
+		redirectURI:  os.Getenv("REDIRECT_URI"),
+	}
+}
+
 // GetAuthURL возвращает URL для авторизации пользователя
 func (p *Provider) GetAuthURL(state string) string {
 	baseURL := "https://wakatime.com/oauth/authorize"
@@ -33,10 +43,12 @@ func (p *Provider) GetAuthURL(state string) string {
 	params.Set("client_id", p.clientID)
 	params.Set("redirect_uri", p.redirectURI)
 	params.Set("response_type", "code")
+
+	params.Set("scope", "email,read_logged_time,read_stats,read_orgs,read_private_leaderboards,read_summaries")
+
 	if state != "" {
 		params.Set("state", state)
 	}
-
 	return baseURL + "?" + params.Encode()
 }
 

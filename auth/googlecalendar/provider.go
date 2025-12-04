@@ -94,7 +94,7 @@ func (p *Provider) ExchangeToken(ctx context.Context, code string) (auth.TokenRe
 
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	client := &http.Client{Timeout: 10 * time.Second}
+	client := &http.Client{Timeout: 30 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to execute request")
@@ -147,7 +147,7 @@ func (p *Provider) RefreshToken(ctx context.Context, refreshToken string) (auth.
 
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	client := &http.Client{Timeout: 10 * time.Second}
+	client := &http.Client{Timeout: 30 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to execute request")

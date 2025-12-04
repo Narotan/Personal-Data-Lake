@@ -4,7 +4,6 @@ import (
 	"DataLake/auth"
 	googlecalendarauth "DataLake/auth/googlecalendar"
 	"DataLake/internal/logger"
-	"fmt"
 	"net/http"
 	"os"
 )
@@ -47,16 +46,7 @@ func HandleGoogleCalendarCallback() http.HandlerFunc {
 			Str("expires_at", token.ExpiresAt).
 			Msg("successfully saved google calendar token")
 
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		fmt.Fprintf(w, `
-			<html>
-			<body>
-				<h1>✅ Google Calendar Authorization Successful!</h1>
-				<p>Access token saved successfully.</p>
-				<p>You can now close this window and test the API at <a href="/googlecalendar/test">/googlecalendar/test</a></p>
-			</body>
-			</html>
-		`)
+		http.Redirect(w, r, "http://localhost:8000/?auth_success=true", http.StatusTemporaryRedirect)
 	}
 }
 

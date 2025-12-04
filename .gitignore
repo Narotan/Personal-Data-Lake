@@ -53,3 +53,29 @@ temp/
 Thumbs.db
 .Trash-*
 
+# ----------------------------
+# Node.js и Frontend (Новое)
+# ----------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+dist/
+build/
+.npm
+.eslintcache
+coverage/
+
+# Frontend / project-specific
+/web/node_modules/
+/web/dist/
+/web/build/
+/web/.vite/
+/web/.env
+/web/.env.local
+/web/.cache/
+
+# Vite / local dev
+/web/.vite
+/web/.turbo

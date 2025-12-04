@@ -2,6 +2,7 @@ package wakatime
 
 import (
 	"DataLake/auth"
+	wakatimeauth "DataLake/auth/wakatime"
 	internal_db "DataLake/internal/db"
 	wakatime_db "DataLake/internal/db/wakatime"
 	"DataLake/internal/logger"
@@ -9,6 +10,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"time"
 
@@ -23,12 +25,16 @@ func FetchSummaries() ([]DailySummary, error) {
 
 	metrics.WakatimeFetchTotal.Inc()
 
+	ctx := context.Background()
 	storage := auth.NewFileTokenStorage("tokens.json")
-	token, err := storage.LoadToken("wakatime")
+	provider := wakatimeauth.NewProviderFromEnv()
+	tokenManager := auth.NewTokenManager(storage, provider)
+
+	token, err := tokenManager.GetValidToken(ctx, "wakatime")
 	if err != nil {
 		metrics.WakatimeFetchErrors.Inc()
-		log.Error().Err(err).Msg("failed to load tokens")
-		return nil, fmt.Errorf("failed to load tokens: %w", err)
+		log.Error().Err(err).Msg("failed to get valid token")
+		return nil, fmt.Errorf("failed to get valid token: %w", err)
 	}
 
 	end := time.Now().UTC()
@@ -64,8 +70,9 @@ func FetchSummaries() ([]DailySummary, error) {
 
 	if resp.StatusCode != http.StatusOK {
 		metrics.WakatimeFetchErrors.Inc()
-		log.Error().Int("status_code", resp.StatusCode).Msg("unexpected status code")
-		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+		body, _ := io.ReadAll(resp.Body)
+		log.Error().Int("status_code", resp.StatusCode).Str("response_body", string(body)).Msg("unexpected status code from WakaTime API")
+		return nil, fmt.Errorf("unexpected status code: %d, body: %s", resp.StatusCode, string(body))
 	}
 
 	var respData SummariesResponse

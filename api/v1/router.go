@@ -19,6 +19,8 @@ func NewRouter(store *internal_db.Store, logger *zerolog.Logger) http.Handler {
 
 	// wakatime endpoints
 	mux.Handle("/wakatime/stats", middleware.APIKeyAuth(http.HandlerFunc(wakaTimeHandler.GetStats)))
+	mux.Handle("/wakatime/top-languages", middleware.APIKeyAuth(http.HandlerFunc(wakaTimeHandler.GetTopLanguages)))
+	mux.Handle("/wakatime/top-projects", middleware.APIKeyAuth(http.HandlerFunc(wakaTimeHandler.GetTopProjects)))
 
 	// googlefit endpoints
 	mux.Handle("/googlefit/stats", middleware.APIKeyAuth(http.HandlerFunc(googleFitHandler.GetStats)))

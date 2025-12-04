@@ -4,20 +4,12 @@ datasources:
   - name: Prometheus
     type: prometheus
     access: proxy
-    uid: prometheus
     url: http://prometheus:9090
     isDefault: true
     editable: false
-    jsonData:
-      timeInterval: "15s"
 
   - name: Loki
     type: loki
     access: proxy
-    uid: loki
     url: http://loki:3100
     editable: false
-    jsonData:
-      maxLines: 1000
-
-

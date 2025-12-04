@@ -4,7 +4,6 @@ import (
 	"DataLake/auth"
 	googlefitauth "DataLake/auth/googlefit"
 	"DataLake/internal/logger"
-	"fmt"
 	"net/http"
 	"os"
 )
@@ -47,16 +46,7 @@ func HandleGoogleFitCallback() http.HandlerFunc {
 			Str("expires_at", token.ExpiresAt).
 			Msg("successfully saved google fit token")
 
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		fmt.Fprintf(w, `
-			<html>
-			<body>
-				<h1>✅ Google Fit Authorization Successful!</h1>
-				<p>Access token saved successfully.</p>
-				<p>You can now close this window and test the API at <a href="/googlefit/test">/googlefit/test</a></p>
-			</body>
-			</html>
-		`)
+		http.Redirect(w, r, "http://localhost:8000/?auth_success=true", http.StatusTemporaryRedirect)
 	}
 }
 
