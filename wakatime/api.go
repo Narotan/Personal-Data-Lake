@@ -10,6 +10,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"time"
 
@@ -69,8 +70,9 @@ func FetchSummaries() ([]DailySummary, error) {
 
 	if resp.StatusCode != http.StatusOK {
 		metrics.WakatimeFetchErrors.Inc()
-		log.Error().Int("status_code", resp.StatusCode).Msg("unexpected status code")
-		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+		body, _ := io.ReadAll(resp.Body)
+		log.Error().Int("status_code", resp.StatusCode).Str("response_body", string(body)).Msg("unexpected status code from WakaTime API")
+		return nil, fmt.Errorf("unexpected status code: %d, body: %s", resp.StatusCode, string(body))
 	}
 
 	var respData SummariesResponse

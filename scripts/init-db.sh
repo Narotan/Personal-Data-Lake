@@ -4,7 +4,7 @@ set -e
 echo "🗃️  Initializing database schema..."
 
 # Run all migration files in order
-for migration in /docker-entrypoint-initdb.d/*.up.sql; do
+for migration in /docker-entrypoint-initdb.d/migrations/*.up.sql; do
     if [ -f "$migration" ]; then
         echo "Running migration: $(basename $migration)"
         psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" -f "$migration"

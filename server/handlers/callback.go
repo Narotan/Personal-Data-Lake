@@ -69,7 +69,7 @@ func HandleCallback() http.HandlerFunc {
 
 		log.Info().Str("uid", token.UID).Msg("oauth flow completed successfully")
 
-		fmt.Fprintf(w, "Authentication successful! Token saved. You can close this window.")
+		http.Redirect(w, r, "http://localhost:8000/?auth_success=true", http.StatusTemporaryRedirect)
 	}
 }
 

@@ -171,3 +171,39 @@ WHERE
   AND d.date <= $3
 ORDER BY
     d.date DESC, p.total_seconds DESC, l.total_seconds DESC;
+
+-- name: GetTopLanguagesByDateRange :many
+SELECT
+    l.name,
+    SUM(l.total_seconds) as total_seconds
+FROM
+    wakatime_days d
+    INNER JOIN
+    wakatime_languages l ON d.id = l.day_id
+WHERE
+    d.user_id = $1
+  AND d.date >= $2
+  AND d.date <= $3
+GROUP BY
+    l.name
+ORDER BY
+    SUM(l.total_seconds) DESC
+LIMIT $4;
+
+-- name: GetTopProjectsByDateRange :many
+SELECT
+    p.name,
+    SUM(p.total_seconds) as total_seconds
+FROM
+    wakatime_days d
+    INNER JOIN
+    wakatime_projects p ON d.id = p.day_id
+WHERE
+    d.user_id = $1
+  AND d.date >= $2
+  AND d.date <= $3
+GROUP BY
+    p.name
+ORDER BY
+    SUM(p.total_seconds) DESC
+LIMIT $4;

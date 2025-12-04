@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Data Lake - Setup</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .subtitle {
+            color: #94a3b8;
+            margin-bottom: 3rem;
+            font-size: 1.1rem;
+        }
+        .auth-section {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+        }
+        .auth-section h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .icon {
+            font-size: 1.8rem;
+        }
+        .auth-button {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            color: white;
+            text-decoration: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 1rem;
+        }
+        .auth-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+        }
+        .status {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+        .status-active {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        .status-inactive {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+        .info-box {
+            background: rgba(59, 130, 246, 0.1);
+            border-left: 4px solid #3b82f6;
+            padding: 1rem;
+            margin-top: 2rem;
+            border-radius: 0.5rem;
+        }
+        .info-box h3 {
+            margin-bottom: 0.5rem;
+            color: #3b82f6;
+        }
+        .info-box p {
+            color: #cbd5e1;
+            line-height: 1.6;
+        }
+        code {
+            background: rgba(15, 23, 42, 0.6);
+            padding: 0.2rem 0.5rem;
+            border-radius: 0.25rem;
+            font-family: 'Monaco', 'Courier New', monospace;
+            color: #22d3ee;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Personal Data Lake</h1>
+        <p class="subtitle">Настройка OAuth авторизации для сбора данных</p>
+
+        <div class="auth-section">
+            <h2><span class="icon">💜</span> WakaTime</h2>
+            <p>Собирает статистику вашего времени, проведенного в IDE и редакторах кода.</p>
+            <a href="https://wakatime.com/oauth/authorize?client_id=rtf2GDb7hmgMXGN7MsDupbSn&redirect_uri=http%3A%2F%2Flocalhost%3A8080%2Fcallback&response_type=code&state=wakatime" 
+               class="auth-button" target="_blank">
+                Авторизовать WakaTime
+            </a>
+            <div class="status status-inactive" id="wakatime-status">❌ Не авторизовано</div>
+        </div>
+
+        <div class="auth-section">
+            <h2><span class="icon">💚</span> Google Fit</h2>
+            <p>Собирает данные о физической активности: шаги, расстояние, сон.</p>
+            <a href="https://accounts.google.com/o/oauth2/v2/auth?access_type=offline&client_id=511018240872-sc6t6pctjkivoolcggr49v4nl3267dqa.apps.googleusercontent.com&include_granted_scopes=true&prompt=consent&redirect_uri=http%3A%2F%2Flocalhost%3A8080%2Foauth2callback&response_type=code&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Ffitness.activity.read+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Ffitness.body.read+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Ffitness.sleep.read+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Ffitness.location.read&state=googlefit" 
+               class="auth-button" target="_blank">
+                Авторизовать Google Fit
+            </a>
+            <div class="status status-inactive" id="googlefit-status">❌ Не авторизовано</div>
+        </div>
+
+        <div class="auth-section">
+            <h2><span class="icon">📅</span> Google Calendar</h2>
+            <p>Собирает информацию о ваших встречах и событиях из календаря.</p>
+            <a href="https://accounts.google.com/o/oauth2/v2/auth?access_type=offline&client_id=511018240872-sc6t6pctjkivoolcggr49v4nl3267dqa.apps.googleusercontent.com&include_granted_scopes=true&prompt=consent&redirect_uri=http%3A%2F%2Flocalhost%3A8080%2Foauth2callback%2Fcalendar&response_type=code&scope=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcalendar.readonly+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcalendar.events.readonly&state=googlecalendar" 
+               class="auth-button" target="_blank">
+                Авторизовать Google Calendar
+            </a>
+            <div class="status status-inactive" id="calendar-status">❌ Не авторизовано</div>
+        </div>
+
+        <div class="info-box">
+            <h3>💡 Что делать после авторизации?</h3>
+            <p>
+                После нажатия на кнопку вы будете перенаправлены на страницу авторизации соответствующего сервиса.
+                Разрешите доступ к данным, и система автоматически начнёт их сбор каждую минуту.
+            </p>
+            <p style="margin-top: 1rem;">
+                Чтобы посмотреть собранные данные, откройте дашборд: <code>http://localhost:5173</code>
+            </p>
+        </div>
+
+        <div class="info-box" style="margin-top: 1rem; border-left-color: #f59e0b; background: rgba(245, 158, 11, 0.1);">
+            <h3 style="color: #f59e0b;">⚠️ Проблемы?</h3>
+            <p>
+                Если вы видите ошибки 403 или "invalid token", просто нажмите на соответствующую кнопку авторизации заново.
+                Токены автоматически обновятся.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Проверка статуса авторизации (можно расширить, добавив API endpoint)
+        async function checkAuthStatus() {
+            try {
+                const response = await fetch('/api/v1/auth/status');
+                const data = await response.json();
+                
+                if (data.wakatime) {
+                    document.getElementById('wakatime-status').className = 'status status-active';
+                    document.getElementById('wakatime-status').textContent = '✅ Авторизовано';
+                }
+                if (data.googlefit) {
+                    document.getElementById('googlefit-status').className = 'status status-active';
+                    document.getElementById('googlefit-status').textContent = '✅ Авторизовано';
+                }
+                if (data.googlecalendar) {
+                    document.getElementById('calendar-status').className = 'status status-active';
+                    document.getElementById('calendar-status').textContent = '✅ Авторизовано';
+                }
+            } catch (error) {
+                console.log('Auth status check failed:', error);
+            }
+        }
+
+        // Проверяем статус при загрузке
+        // checkAuthStatus();
+    </script>
+</body>
+</html>

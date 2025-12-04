@@ -6,8 +6,8 @@ USER=$(whoami)
 
 echo "Installing aw-client systemd service for user $USER..."
 
-sudo cp scripts/systemd/aw-client.service /etc/systemd/system/aw-client@.service
-sudo cp scripts/systemd/aw-client.timer /etc/systemd/system/aw-client@.timer
+sudo cp scripts/aw-client.service /etc/systemd/system/aw-client@.service
+sudo cp scripts/aw-client.timer /etc/systemd/system/aw-client@.timer
 
 sudo systemctl daemon-reload
 sudo systemctl enable aw-client@$USER.timer

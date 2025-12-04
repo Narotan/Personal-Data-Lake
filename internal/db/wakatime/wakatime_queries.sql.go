@@ -560,6 +560,118 @@ func (q *Queries) GetSummaryByID(ctx context.Context, id int32) (WakatimeSummary
 	return i, err
 }
 
+const getTopLanguagesByDateRange = `-- name: GetTopLanguagesByDateRange :many
+SELECT
+    l.name,
+    SUM(l.total_seconds) as total_seconds
+FROM
+    wakatime_days d
+    INNER JOIN
+    wakatime_languages l ON d.id = l.day_id
+WHERE
+    d.user_id = $1
+  AND d.date >= $2
+  AND d.date <= $3
+GROUP BY
+    l.name
+ORDER BY
+    SUM(l.total_seconds) DESC
+LIMIT $4
+`
+
+type GetTopLanguagesByDateRangeParams struct {
+	UserID pgtype.UUID
+	Date   pgtype.Date
+	Date_2 pgtype.Date
+	Limit  int32
+}
+
+type GetTopLanguagesByDateRangeRow struct {
+	Name         string
+	TotalSeconds int64
+}
+
+func (q *Queries) GetTopLanguagesByDateRange(ctx context.Context, arg GetTopLanguagesByDateRangeParams) ([]GetTopLanguagesByDateRangeRow, error) {
+	rows, err := q.db.Query(ctx, getTopLanguagesByDateRange,
+		arg.UserID,
+		arg.Date,
+		arg.Date_2,
+		arg.Limit,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetTopLanguagesByDateRangeRow
+	for rows.Next() {
+		var i GetTopLanguagesByDateRangeRow
+		if err := rows.Scan(&i.Name, &i.TotalSeconds); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getTopProjectsByDateRange = `-- name: GetTopProjectsByDateRange :many
+SELECT
+    p.name,
+    SUM(p.total_seconds) as total_seconds
+FROM
+    wakatime_days d
+    INNER JOIN
+    wakatime_projects p ON d.id = p.day_id
+WHERE
+    d.user_id = $1
+  AND d.date >= $2
+  AND d.date <= $3
+GROUP BY
+    p.name
+ORDER BY
+    SUM(p.total_seconds) DESC
+LIMIT $4
+`
+
+type GetTopProjectsByDateRangeParams struct {
+	UserID pgtype.UUID
+	Date   pgtype.Date
+	Date_2 pgtype.Date
+	Limit  int32
+}
+
+type GetTopProjectsByDateRangeRow struct {
+	Name         string
+	TotalSeconds int64
+}
+
+func (q *Queries) GetTopProjectsByDateRange(ctx context.Context, arg GetTopProjectsByDateRangeParams) ([]GetTopProjectsByDateRangeRow, error) {
+	rows, err := q.db.Query(ctx, getTopProjectsByDateRange,
+		arg.UserID,
+		arg.Date,
+		arg.Date_2,
+		arg.Limit,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetTopProjectsByDateRangeRow
+	for rows.Next() {
+		var i GetTopProjectsByDateRangeRow
+		if err := rows.Scan(&i.Name, &i.TotalSeconds); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getWakatimeStatsByDateRange = `-- name: GetWakatimeStatsByDateRange :many
 SELECT
     d.id as day_id,

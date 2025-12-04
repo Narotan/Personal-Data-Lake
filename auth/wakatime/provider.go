@@ -43,10 +43,12 @@ func (p *Provider) GetAuthURL(state string) string {
 	params.Set("client_id", p.clientID)
 	params.Set("redirect_uri", p.redirectURI)
 	params.Set("response_type", "code")
+
+	params.Set("scope", "email,read_logged_time,read_stats,read_orgs,read_private_leaderboards,read_summaries")
+
 	if state != "" {
 		params.Set("state", state)
 	}
-
 	return baseURL + "?" + params.Encode()
 }
 
