@@ -2,22 +2,27 @@
 
 > Self-hosted платформа для сбора и анализа персональной продуктивности с современным веб-интерфейсом
 
-[![Go Version](https://img.shields.io/badge/Go-1.23+-00ADD8?style=flat&logo=go)](https://golang.org)
+
+[![Go](https://img.shields.io/badge/Go-1.25-00ADD8?style=flat&logo=go)](https://golang.org)
 [![React](https://img.shields.io/badge/React-18+-61DAFB?style=flat&logo=react)](https://reactjs.org)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-336791?style=flat&logo=postgresql)](https://postgresql.org)
 [![Docker](https://img.shields.io/badge/Docker-ready-2496ED?style=flat&logo=docker)](https://docker.com)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Grafana](https://img.shields.io/badge/Grafana-9+-F46800?style=flat&logo=grafana)](https://grafana.com/)
+[![Prometheus](https://img.shields.io/badge/Prometheus-2+-E6522C?style=flat&logo=prometheus)](https://prometheus.io/)
+[![Loki](https://img.shields.io/badge/Loki-2+-00B2A9?style=flat&logo=loki)](https://grafana.com/oss/loki/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](docs/LICENSE)
+
 
 ---
 
 ## 🎯 О проекте
 
-**Personal Data Lake** - это self-hosted решение для автоматического сбора и визуализации данных о вашей продуктивности. Приложение собирает данные из различных источников, хранит их локально в PostgreSQL и предоставляет красивый React-интерфейс для анализа.
+**Personal Data Lake** - это self-hosted решение для автоматического сбора и визуализации данных о персональной продуктивности. Приложение собирает данные из различных источников, хранит их локально в PostgreSQL и предоставляет современный интерфейс для просмотра и анализа.
 
-### ✨ Ключевые возможности
+### ✨ Функционал
 
-- 📊 **Интерактивный Dashboard** - графики, KPI, тренды в реальном времени
-- 🔄 **Автоматический сбор** - данные собираются каждые 30 минут
+- 📊 **Интерактивный Dashboard** - графики, KPI
+- 🔄 **Автоматический сбор** - данные собираются каждые 10 минут (можно легко настроить)
 - 🎨 **Адаптивная визуализация** - месячная агрегация для больших периодов
 - 🔐 **Полная приватность** - все данные хранятся локально
 - 🚀 **Быстрый старт** - запуск одной командой через Docker
@@ -25,38 +30,37 @@
 
 ### 📦 Источники данных
 
-| Сервис | Что собирается | Статус |
-|--------|----------------|--------|
-| 💻 **WakaTime** | Время кодирования, языки, проекты | ✅ Ready |
-| 🏃 **Google Fit** | Шаги, дистанция, физическая активность | ✅ Ready |
-| 📅 **Google Calendar** | События, встречи, расписание | ✅ Ready |
-| 🖥️ **ActivityWatch** | Активность на компьютере, приложения | ✅ Ready |
-
+| Сервис | Что собирается |
+|--------|----------------|
+| 💻 **WakaTime** | Время кодирования, языки, проекты 
+| 🏃 **Google Fit** | Шаги, дистанция, физическая активность 
+| 📅 **Google Calendar** | События, встречи, расписание 
+| 🖥️ **ActivityWatch** | Активность на компьютере, приложения
 ---
 
 ## ⚡ Быстрый старт
 
 ```bash
-# Клонируй репозиторий
+# Клонировать репозиторий
 git clone https://github.com/Narotan/Personal-Data-Lake.git
 cd Personal-Data-Lake
 
-# Настрой окружение
+# Настроить окружение
 make setup
 
-# Отредактируй .env (добавь API ключи)
+# Отредактировать .env (добавить API ключи)
 nano .env
 
-# Запусти backend
+# Запустить backend
 make start
 
-# В новом терминале запусти frontend
+# В новом терминале запустить frontend
 cd web
 npm install
 npm run dev
 
-# Открой браузер
-# http://localhost:5173
+# Открыть браузер
+# http://localhost:8000
 ```
 
 **📖 Подробная инструкция:** [docs/QUICKSTART.md](docs/QUICKSTART.md)
@@ -116,12 +120,145 @@ Grafana + Loki + Promtail
 
 ---
 
+## 🏗 Архитектура проекта
+
+### 📁 Структура Backend
+
+```
+.
+├── cmd/                    # Точки входа приложений
+│   ├── main.go            # Основной сервер
+│   ├── aw-client/         # Клиент ActivityWatch
+│   └── test-api/          # Тестовый клиент API
+│
+├── api/v1/                # REST API
+│   ├── router.go          # Маршрутизация API
+│   ├── handlers/          # HTTP обработчики
+│   │   ├── activitywatch.go
+│   │   ├── googlecalendar.go
+│   │   ├── googlefit.go
+│   │   └── wakatime.go
+│   └── models/            # API модели
+│
+├── server/                # HTTP сервер
+│   ├── server.go          # Конфигурация сервера
+│   ├── routes.go          # Общие маршруты
+│   └── handlers/          # Обработчики (auth, callbacks)
+│
+├── auth/                  # OAuth 2.0 провайдеры
+│   ├── provider.go        # Базовый провайдер
+│   ├── token_manager.go   # Управление токенами
+│   ├── storage.go         # Хранение токенов (tokens.json)
+│   ├── googlecalendar/
+│   ├── googlefit/
+│   └── wakatime/
+│
+├── db/                    # База данных
+│   ├── db.go              # Подключение к PostgreSQL
+│   ├── migrations/        # Миграции схемы
+│   ├── schema/            # DDL определения таблиц
+│   ├── queries/           # SQL запросы для SQLC
+│   └── views/             # SQL представления
+│
+├── internal/db/           # Генерируемый SQLC код
+│   ├── store.go           # Общий интерфейс хранилища
+│   ├── activitywatch/     # Queries для ActivityWatch
+│   ├── googlecalendar/    # Queries для Google Calendar
+│   ├── googlefit/         # Queries для Google Fit
+│   └── wakatime/          # Queries для WakaTime
+│
+├── scheduler/             # Cron задачи
+│   └── scheduler.go       # Периодический сбор данных
+│
+├── internal/
+│   ├── logger/            # Структурированное логирование
+│   ├── metrics/           # Prometheus метрики
+│   └── middleware/        # HTTP middleware
+│
+├── wakatime/              # Интеграция WakaTime
+├── googlefit/             # Интеграция Google Fit
+├── googlecalendar/        # Интеграция Google Calendar
+│
+└── monitoring/            # Конфигурация мониторинга
+    ├── prometheus.yml
+    ├── loki-config.yml
+    └── grafana/
+```
+
+#### 🔄 Поток данных Backend
+
+1. **Scheduler** → запускает сбор каждые 10 минут
+2. **API Clients** (wakatime, googlefit, googlecalendar) → получают данные из внешних API
+3. **SQLC Stores** → сохраняют в PostgreSQL с type-safety
+4. **REST API** → обслуживает запросы фронтенда
+5. **Middleware** → логирование, метрики, авторизация
+
+### 📁 Структура Frontend
+
+```
+web/
+├── src/
+│   ├── main.tsx           # Точка входа
+│   ├── App.tsx            # Корневой компонент
+│   │
+│   ├── components/        # React компоненты
+│   │   ├── Dashboard.tsx          # Главная страница
+│   │   ├── KPICard.tsx            # KPI карточки
+│   │   ├── ProductivityChart.tsx  # График времени кодирования
+│   │   ├── ActivityChart.tsx      # График шагов
+│   │   ├── LanguagesPieChart.tsx  # Круговая диаграмма языков
+│   │   ├── ProjectsBarChart.tsx   # Топ проектов
+│   │   ├── ApplicationsChart.tsx  # Топ приложений
+│   │   ├── CalendarTimeline.tsx   # Timeline событий
+│   │   └── DateRangePicker.tsx    # Выбор периода
+│   │
+│   ├── hooks/             # Custom React hooks
+│   │   └── useDashboardData.ts   # Загрузка данных с API
+│   │
+│   ├── lib/               # Утилиты
+│   │   └── api.ts                 # API клиент
+│   │
+│   └── index.css          # Глобальные стили
+│
+├── index.html             # HTML шаблон
+├── vite.config.ts         # Vite конфигурация
+├── tailwind.config.js     # TailwindCSS конфигурация
+├── tsconfig.json          # TypeScript конфигурация
+└── package.json           # Зависимости
+```
+
+#### 🎨 Архитектура Frontend
+
+- **React 18** с TypeScript для type-safety
+- **Vite** для быстрой разработки и сборки
+- **TailwindCSS** для стилизации
+- **Recharts** для интерактивных графиков
+- **Framer Motion** для плавных анимаций
+- **date-fns** для работы с датами
+
+#### 📊 Компонентная структура
+
+```
+App.tsx
+└── Dashboard.tsx
+    ├── DateRangePicker       # Выбор периода
+    ├── KPICard (x4)          # Метрики
+    ├── ProductivityChart     # WakaTime график
+    ├── ActivityChart         # Google Fit шаги
+    ├── LanguagesPieChart     # Языки программирования
+    ├── ProjectsBarChart      # Проекты
+    ├── ApplicationsChart     # Приложения ПК
+    └── CalendarTimeline      # События календаря
+```
+
+---
+
 ## 📚 Документация
 
 - 🚀 [Быстрый старт](docs/QUICKSTART.md) - установка и настройка
 - 📖 [API Documentation](docs/API.md) - REST API endpoints
-- 🔧 [Full README](docs/README.md) - подробная документация
 - 📝 [Changelog](docs/CHANGELOG.md) - история изменений
+- 📄 [License](docs/LICENSE) - лицензия MIT
 
 ---
 
@@ -158,6 +295,6 @@ npm run preview    # Preview build
 
 ## 📄 Лицензия
 
-Распространяется под лицензией MIT. См. [LICENSE](LICENSE) для подробностей.
+Проект распространяется под лицензией MIT. Подробности в файле [LICENSE](docs/LICENSE).
 
 ---

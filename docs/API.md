@@ -1,31 +1,45 @@
 # API Documentation
 
-Base URL: `http://localhost:8080/api/v1`
+**Base URL:** `http://localhost:8080/api/v1`
 
-All endpoints require authentication via `X-API-Key` header.
+Все endpoints требуют аутентификации через заголовок `X-API-Key`.
 
-## Authentication
+---
 
-All API requests must include your API key in the header:
+## Содержание
+
+- [Аутентификация](#аутентификация)
+- [WakaTime Endpoints](#wakatime)
+- [Google Fit Endpoints](#google-fit)
+- [Google Calendar Endpoints](#google-calendar)
+- [ActivityWatch Endpoints](#activitywatch)
+- [Обработка ошибок](#error-responses)
+- [Примеры использования](#examples)
+
+---
+
+## Аутентификация
+
+Все API запросы должны включать API ключ в заголовке:
 
 ```
 X-API-Key: your_api_key_from_env
 ```
 
-Example:
+**Пример:**
 ```bash
 curl -H "X-API-Key: your_api_key" http://localhost:8080/api/v1/wakatime/stats
 ```
 
-## Endpoints
+---
 
-### WakaTime
+## WakaTime
 
-#### Get Coding Statistics
+### Получение статистики кодирования
 
 **GET** `/wakatime/stats`
 
-Get coding statistics from WakaTime for a date range.
+Получение статистики кодирования из WakaTime за указанный период.
 
 **Query Parameters:**
 - `start_date` (required): Start date in format `YYYY-MM-DD`
@@ -75,13 +89,15 @@ curl -H "X-API-Key: your_api_key" \
 
 ---
 
-### Google Fit
+---
 
-#### Get Fitness Statistics
+## Google Fit
+
+### Получение статистики физической активности
 
 **GET** `/googlefit/stats`
 
-Get fitness data from Google Fit for a date range.
+Получение данных о физической активности из Google Fit за указанный период.
 
 **Query Parameters:**
 - `start_date` (required): Start date in format `YYYY-MM-DD`
@@ -116,13 +132,15 @@ curl -H "X-API-Key: your_api_key" \
 
 ---
 
-### Google Calendar
+---
 
-#### Get Calendar Events
+## Google Calendar
+
+### Получение событий календаря
 
 **GET** `/googlecalendar/events`
 
-Get calendar events from Google Calendar for a date range.
+Получение событий из Google Calendar за указанный период.
 
 **Query Parameters:**
 - `start_date` (optional): Start date in format `YYYY-MM-DD` (default: 7 days ago)
@@ -156,13 +174,15 @@ curl -H "X-API-Key: your_api_key" \
 
 ---
 
-### ActivityWatch
+---
 
-#### Submit Events
+## ActivityWatch
+
+### Отправка событий активности
 
 **POST** `/activitywatch/events`
 
-Submit activity tracking events to ActivityWatch.
+Отправка событий отслеживания активности в ActivityWatch.
 
 **Request Body:**
 ```json
@@ -208,11 +228,11 @@ curl -X POST \
 }
 ```
 
-#### Get Activity Statistics
+### Получение статистики активности
 
 **GET** `/activitywatch/stats`
 
-Get activity statistics from ActivityWatch for a date range.
+Получение статистики активности из ActivityWatch за указанный период.
 
 **Query Parameters:**
 - `start_date` (optional): Start date in format `YYYY-MM-DD` (default: 7 days ago)
@@ -252,12 +272,14 @@ curl -H "X-API-Key: your_api_key" \
 
 ---
 
+---
+
 ## Error Responses
 
-All endpoints may return the following error responses:
+Все endpoints могут возвращать следующие ошибки:
 
 ### 401 Unauthorized
-Missing or invalid API key.
+Отсутствует или недействителен API ключ.
 
 ```json
 {
@@ -266,7 +288,7 @@ Missing or invalid API key.
 ```
 
 ### 400 Bad Request
-Invalid query parameters.
+Некорректные параметры запроса.
 
 ```json
 {
@@ -275,7 +297,7 @@ Invalid query parameters.
 ```
 
 ### 500 Internal Server Error
-Server error occurred.
+Внутренняя ошибка сервера.
 
 ```json
 {
@@ -285,21 +307,17 @@ Server error occurred.
 
 ---
 
-## Rate Limiting
+## Ограничения
 
-Currently, there is no rate limiting implemented. This is a single-user application.
+**Rate Limiting:** Не реализовано. Приложение предназначено для одного пользователя.
 
----
-
-## Data Retention
-
-All data is stored in PostgreSQL indefinitely. You can manually delete old data if needed.
+**Хранение данных:** Все данные хранятся в PostgreSQL без ограничений по времени. При необходимости устаревшие данные можно удалить вручную.
 
 ---
 
 ## Examples
 
-### Get weekly coding summary
+### Получение еженедельной сводки кодирования
 
 ```bash
 #!/bin/bash
@@ -313,7 +331,7 @@ curl -H "X-API-Key: $API_KEY" \
   | jq '.languages'
 ```
 
-### Get today's fitness data
+### Получение данных о фитнесе за сегодня
 
 ```bash
 #!/bin/bash
@@ -326,7 +344,7 @@ curl -H "X-API-Key: $API_KEY" \
   | jq '.daily_data[0]'
 ```
 
-### Get this week's calendar events
+### Получение событий календаря за текущую неделю
 
 ```bash
 #!/bin/bash
@@ -341,7 +359,8 @@ curl -H "X-API-Key: $API_KEY" \
 ```
 
 ---
-## Python Example
+
+## Пример использования Python
 
 ```python
 import requests
