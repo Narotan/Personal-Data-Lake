@@ -140,8 +140,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **2.0.0** — Major update with web frontend
 - **1.0.0** — First public release candidate
 
----
-<<<<<<< HEAD
-=======
-
->>>>>>> origin/master
