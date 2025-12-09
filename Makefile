@@ -63,18 +63,37 @@ clean: ## Удалить всё (включая данные)
 	@docker-compose down -v
 	@echo "✅ Всё удалено"
 
+check-aw: ## Проверить ActivityWatch (установлен ли и запущен)
+	@./scripts/check_activitywatch.sh
+
 build-aw: ## Собрать ActivityWatch клиент
 	@echo "🔨 Сборка aw-client..."
 	@./scripts/build_aw_client.sh
 	@echo "✅ Готово: ./bin/aw-client"
 
-run-aw: ## Запустить ActivityWatch клиент (собрать данные за последний час)
-	@if [ ! -f bin/aw-client ]; then \
-		echo "⚠️  Сначала собери клиент: make build-aw"; \
-		exit 1; \
-	fi
+run-aw: build-aw ## Запустить ActivityWatch клиент (собрать данные за последний час)
 	@echo "🚀 Запуск aw-client..."
+	@echo "Проверка ActivityWatch..."
+	@./scripts/check_activitywatch.sh > /dev/null 2>&1 || (echo "❌ ActivityWatch не запущен. Запустите: make check-aw" && exit 1)
 	@./bin/aw-client -minutes 60 -api-key "$$(grep API_KEY .env | cut -d'=' -f2 | tr -d '\"')"
+	@echo ""
+	@echo "💡 Проверьте данные в БД: make check-db-aw"
+
+check-db-aw: ## Проверить данные ActivityWatch в БД
+	@echo "📊 Проверка данных в базе..."
+	@docker-compose exec -T postgres psql -U postgres -d datalake -c \
+		"SELECT COUNT(*) as total_events, \
+		MIN(timestamp) as first_event, \
+		MAX(timestamp) as last_event, \
+		COUNT(DISTINCT app) as unique_apps \
+		FROM activity_events;" 2>/dev/null || echo "❌ Ошибка подключения к БД"
+	@echo ""
+	@echo "Последние 5 событий:"
+	@docker-compose exec -T postgres psql -U postgres -d datalake -c \
+		"SELECT timestamp, app, LEFT(title, 50) as title, duration \
+		FROM activity_events \
+		ORDER BY timestamp DESC \
+		LIMIT 5;" 2>/dev/null || echo "❌ Ошибка подключения к БД"
 
 install-aw-service: ## Установить aw-client как systemd сервис
 	@echo "📦 Установка systemd сервиса..."

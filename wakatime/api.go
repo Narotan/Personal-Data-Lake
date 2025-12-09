@@ -26,7 +26,12 @@ func FetchSummaries() ([]DailySummary, error) {
 	metrics.WakatimeFetchTotal.Inc()
 
 	ctx := context.Background()
-	storage := auth.NewFileTokenStorage("tokens.json")
+	storage, err := auth.NewFileTokenStorageFromEnv("tokens.json")
+	if err != nil {
+		metrics.WakatimeFetchErrors.Inc()
+		log.Error().Err(err).Msg("failed to initialize token storage")
+		return nil, fmt.Errorf("failed to initialize storage: %w", err)
+	}
 	provider := wakatimeauth.NewProviderFromEnv()
 	tokenManager := auth.NewTokenManager(storage, provider)
 

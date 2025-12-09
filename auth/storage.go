@@ -3,6 +3,8 @@ package auth
 import (
 	"DataLake/internal/logger"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"os"
 )
 
@@ -13,15 +15,44 @@ type TokenStorage interface {
 }
 
 type FileTokenStorage struct {
-	filepath string
+	filepath   string
+	encryption *Encryption
 }
 
-// NewFileTokenStorage создает новое хранилище токенов в файле
-func NewFileTokenStorage(filepath string) *FileTokenStorage {
-	return &FileTokenStorage{filepath: filepath}
+// NewFileTokenStorage создает новое хранилище токенов в файле с шифрованием
+// encryptionKey должен быть 32 байта для AES-256
+func NewFileTokenStorage(filepath string, encryptionKey string) (*FileTokenStorage, error) {
+	encryption, err := NewEncryption(encryptionKey)
+	if err != nil {
+		return nil, err
+	}
+	return &FileTokenStorage{
+		filepath:   filepath,
+		encryption: encryption,
+	}, nil
 }
 
-// SaveToken сохраняет токен для указанного провайдера
+// encryptedToken структура для хранения зашифрованных данных
+type encryptedToken struct {
+	EncryptedData string `json:"encrypted_data"`
+}
+
+// NewFileTokenStorageFromEnv создает хранилище токенов с ключом шифрования из переменной окружения
+// Если ENCRYPTION_KEY не задан, возвращает ошибку
+func NewFileTokenStorageFromEnv(filepath string) (*FileTokenStorage, error) {
+	encryptionKey := os.Getenv("ENCRYPTION_KEY")
+	if encryptionKey == "" {
+		return nil, fmt.Errorf("ENCRYPTION_KEY environment variable is required for token encryption")
+	}
+
+	if len(encryptionKey) != 32 {
+		return nil, fmt.Errorf("ENCRYPTION_KEY must be exactly 32 bytes for AES-256, current length: %d", len(encryptionKey))
+	}
+
+	return NewFileTokenStorage(filepath, encryptionKey)
+}
+
+// SaveToken сохраняет токен для указанного провайдера с шифрованием
 func (s *FileTokenStorage) SaveToken(providerName string, token TokenResponse) error {
 	log := logger.Get()
 
@@ -32,19 +63,35 @@ func (s *FileTokenStorage) SaveToken(providerName string, token TokenResponse) e
 
 	tokens[providerName] = token
 
-	data, err := json.MarshalIndent(tokens, "", "  ")
+	// Сериализуем все токены в JSON
+	data, err := json.Marshal(tokens)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to marshal tokens")
 		return err
 	}
 
-	err = os.WriteFile(s.filepath, data, 0644)
+	// Шифруем данные
+	encryptedData, err := s.encryption.Encrypt(data)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to encrypt tokens")
+		return err
+	}
+
+	// Сохраняем зашифрованные данные
+	encToken := encryptedToken{EncryptedData: encryptedData}
+	encData, err := json.MarshalIndent(encToken, "", "  ")
+	if err != nil {
+		log.Error().Err(err).Msg("failed to marshal encrypted token")
+		return err
+	}
+
+	err = os.WriteFile(s.filepath, encData, 0600) // 0600 вместо 0644 для лучшей безопасности
 	if err != nil {
 		log.Error().Err(err).Msg("failed to write tokens to file")
 		return err
 	}
 
-	log.Info().Str("provider", providerName).Msg("tokens saved successfully")
+	log.Info().Str("provider", providerName).Msg("tokens saved successfully (encrypted)")
 	return nil
 }
 
@@ -68,7 +115,7 @@ func (s *FileTokenStorage) LoadToken(providerName string) (TokenResponse, error)
 	return token, nil
 }
 
-// loadAll загружает все токены из файла
+// loadAll загружает все токены из файла с расшифровкой
 func (s *FileTokenStorage) loadAll() (map[string]TokenResponse, error) {
 	data, err := os.ReadFile(s.filepath)
 	if err != nil {
@@ -78,6 +125,26 @@ func (s *FileTokenStorage) loadAll() (map[string]TokenResponse, error) {
 		return nil, err
 	}
 
+	// Пытаемся загрузить как зашифрованные данные (новый формат)
+	var encToken encryptedToken
+	err = json.Unmarshal(data, &encToken)
+	if err == nil && encToken.EncryptedData != "" {
+		// Расшифровываем данные
+		decryptedData, err := s.encryption.Decrypt(encToken.EncryptedData)
+		if err != nil {
+			return nil, errors.New("failed to decrypt tokens: " + err.Error())
+		}
+
+		var tokens map[string]TokenResponse
+		err = json.Unmarshal(decryptedData, &tokens)
+		if err != nil {
+			return nil, err
+		}
+
+		return tokens, nil
+	}
+
+	// Если не получилось, пытаемся загрузить как незашифрованные (старый формат для миграции)
 	var tokens map[string]TokenResponse
 	err = json.Unmarshal(data, &tokens)
 	if err != nil {

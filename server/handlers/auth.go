@@ -16,7 +16,12 @@ type AuthStatusResponse struct {
 func HandleAuthStatus() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		log := logger.Get()
-		storage := auth.NewFileTokenStorage("tokens.json")
+		storage, err := auth.NewFileTokenStorageFromEnv("tokens.json")
+		if err != nil {
+			log.Error().Err(err).Msg("failed to initialize token storage")
+			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+			return
+		}
 
 		status := AuthStatusResponse{}
 

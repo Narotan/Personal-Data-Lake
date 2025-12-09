@@ -27,7 +27,11 @@ func FetchCalendars() (*CalendarListResponse, error) {
 	log := logger.Get()
 	ctx := context.Background()
 
-	storage := auth.NewFileTokenStorage("tokens.json")
+	storage, err := auth.NewFileTokenStorageFromEnv("tokens.json")
+	if err != nil {
+		log.Error().Err(err).Msg("failed to initialize token storage")
+		return nil, fmt.Errorf("failed to initialize storage: %w", err)
+	}
 	provider := googlecalendarauth.NewProviderFromEnv()
 	tokenManager := auth.NewTokenManager(storage, provider)
 
@@ -81,7 +85,11 @@ func FetchEvents(calendarID string, startTime, endTime time.Time) (*EventsRespon
 	log := logger.Get()
 	ctx := context.Background()
 
-	storage := auth.NewFileTokenStorage("tokens.json")
+	storage, err := auth.NewFileTokenStorageFromEnv("tokens.json")
+	if err != nil {
+		log.Error().Err(err).Msg("failed to initialize token storage")
+		return nil, fmt.Errorf("failed to initialize storage: %w", err)
+	}
 	provider := googlecalendarauth.NewProviderFromEnv()
 	tokenManager := auth.NewTokenManager(storage, provider)
 

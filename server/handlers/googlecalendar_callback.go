@@ -34,7 +34,12 @@ func HandleGoogleCalendarCallback() http.HandlerFunc {
 			return
 		}
 
-		storage := auth.NewFileTokenStorage("tokens.json")
+		storage, err := auth.NewFileTokenStorageFromEnv("tokens.json")
+		if err != nil {
+			log.Error().Err(err).Msg("failed to initialize token storage")
+			http.Error(w, "Internal Server Error: failed to initialize storage", http.StatusInternalServerError)
+			return
+		}
 		if err := storage.SaveToken("googlecalendar", token); err != nil {
 			log.Error().Err(err).Msg("failed to save token")
 			http.Error(w, "Failed to save token", http.StatusInternalServerError)

@@ -6,6 +6,52 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [2.1.0] - 2025-12-09
+
+### Added - Security Features 🔒
+- **Token Encryption** - AES-256-GCM encryption for all OAuth tokens
+    - New `auth/encryption.go` module with AES-GCM implementation
+    - Encrypted storage in `tokens.json` with backward compatibility
+    - `ENCRYPTION_KEY` environment variable (32 bytes required)
+    - `NewFileTokenStorageFromEnv()` helper function
+- **CORS Middleware** - Cross-Origin Resource Sharing protection
+    - Configurable allowed origins via `ALLOWED_ORIGINS` env var
+    - Support for preflight requests (OPTIONS)
+    - Credentials support for authenticated requests
+- **Rate Limiting** - DDoS and brute-force protection
+    - Token bucket algorithm with per-IP limiting
+    - Configurable via `RATE_LIMIT_RPS` and `RATE_LIMIT_BURST`
+    - Automatic cleanup of old limiters
+    - HTTP 429 response for exceeded limits
+- **Docker Security** - Unprivileged container execution
+    - Created `appuser` (UID 1000) in Docker container
+    - Application runs as non-root user
+    - Proper file ownership configuration
+- **Secret Management** - Environment-based configuration
+    - Removed hardcoded API keys from scripts
+    - All secrets via environment variables
+    - `.env.example` with comprehensive documentation
+- **Security Documentation**
+    - New `docs/SECURITY.md` with detailed security guide
+    - Updated README.md with security section
+    - Configuration examples and best practices
+
+### Changed
+- Updated all token storage initialization to use encryption
+- Modified `scripts/generate_traffic.sh` to use env variables
+- Enhanced `Dockerfile` with security best practices
+- Updated middleware stack with CORS and rate limiting
+
+### Security
+- Fixed: OAuth tokens stored in plaintext (CVE-worthy)
+- Fixed: Missing CORS configuration
+- Fixed: No rate limiting (DDoS vulnerability)
+- Fixed: Docker container running as root
+- Fixed: Hardcoded secrets in scripts
+
+### Dependencies
+- Added `golang.org/x/time/rate` for rate limiting
+
 ## [2.0.0] - 2025-12-09
 
 ### Added

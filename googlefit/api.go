@@ -26,7 +26,12 @@ func FetchSummaries(days int) (*AggregatedDataResponse, error) {
 	metrics.GoogleFitFetchTotal.Inc()
 	ctx := context.Background()
 
-	storage := auth.NewFileTokenStorage("tokens.json")
+	storage, err := auth.NewFileTokenStorageFromEnv("tokens.json")
+	if err != nil {
+		metrics.GoogleFitFetchErrors.Inc()
+		log.Error().Err(err).Msg("failed to initialize token storage")
+		return nil, fmt.Errorf("failed to initialize storage: %w", err)
+	}
 	provider := googlefitauth.NewProviderFromEnv()
 	tokenManager := auth.NewTokenManager(storage, provider)
 

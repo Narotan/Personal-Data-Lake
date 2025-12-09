@@ -315,7 +315,7 @@ curl -H "X-API-Key: your_api_key" \
 
 ---
 
-## Examples
+## Примеры 
 
 ### Получение еженедельной сводки кодирования
 
@@ -357,44 +357,3 @@ curl -H "X-API-Key: $API_KEY" \
   "http://localhost:8080/api/v1/googlecalendar/events?start_date=$WEEK_START&end_date=$WEEK_END" \
   | jq 'length'
 ```
-
----
-
-## Пример использования Python
-
-```python
-import requests
-from datetime import datetime, timedelta
-
-API_KEY = "your_api_key"
-BASE_URL = "http://localhost:8080/api/v1"
-
-headers = {
-    "X-API-Key": API_KEY
-}
-
-def get_wakatime_stats(start_date: str, end_date: str):
-    response = requests.get(
-        f"{BASE_URL}/wakatime/stats",
-        params={
-            "start_date": start_date,
-            "end_date": end_date
-        },
-        headers=headers
-    )
-    response.raise_for_status()
-    return response.json()
-
-# Get last 7 days
-end_date = datetime.now()
-start_date = end_date - timedelta(days=7)
-
-stats = get_wakatime_stats(
-    start_date.strftime("%Y-%m-%d"),
-    end_date.strftime("%Y-%m-%d")
-)
-
-print(f"Total coding time: {stats['total_seconds'] / 3600:.2f} hours")
-print(f"Daily average: {stats['daily_average'] / 3600:.2f} hours")
-```
-
