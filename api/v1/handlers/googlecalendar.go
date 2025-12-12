@@ -27,7 +27,6 @@ func NewGoogleCalendarHandler(store *internal_db.Store, logger *zerolog.Logger) 
 }
 
 // GetEvents обрабатывает GET /api/v1/googlecalendar/events.
-
 func (h *GoogleCalendarHandler) GetEvents(w http.ResponseWriter, r *http.Request) {
 	endDate := time.Now()
 	startDate := endDate.AddDate(0, 0, -6)

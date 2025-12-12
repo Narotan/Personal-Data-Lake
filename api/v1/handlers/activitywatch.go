@@ -81,6 +81,18 @@ func (h *ActivityWatchHandler) HandleEvents(w http.ResponseWriter, r *http.Reque
 }
 
 // GetStats обрабатывает GET /api/v1/activitywatch/stats
+// @Summary Получить статистику ActivityWatch
+// @Description Возвращает статистику по использованию приложений за указанный период
+// @Tags ActivityWatch
+// @Accept json
+// @Produce json
+// @Param start query string false "Время начала (RFC3339)" default(24 hours ago)
+// @Param end query string false "Время окончания (RFC3339)" default(now)
+// @Success 200 {array} activitywatch_db.GetAppStatsRow
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Security ApiKeyAuth
+// @Router /activitywatch/stats [get]
 func (h *ActivityWatchHandler) GetStats(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)

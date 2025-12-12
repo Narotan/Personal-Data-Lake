@@ -1,4 +1,4 @@
-.PHONY: help setup start stop restart logs clean build-aw run-aw install-aw-service
+.PHONY: help setup start stop restart logs clean build-aw run-aw install-aw-service swagger
 
 .DEFAULT_GOAL := help
 

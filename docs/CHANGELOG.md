@@ -1,257 +1,249 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
+Все заметные изменения в этом проекте будут задокументированы в этом файле.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+Формат основан на [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/),
+и этот проект придерживается [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.1] - 2025-12-12
+
+### Добавлено - CI/CD и автоматизация 🚀
+- **GitHub Actions CI Pipeline** - Автоматическая проверка кода при каждом коммите
+    - Сборка и тестирование Backend (Go)
+    - Сборка и проверка типов Frontend (React/TypeScript)
+    - Тестовая сборка Docker образов с кешированием
+    - Go linting с golangci-lint
+    - Security сканирование с Trivy
+    - Параллельное выполнение всех проверок
 
 ## [2.2.0] - 2025-12-12
 
-### Changed - Project Structure & Documentation Updates
-- **Frontend Deployment** - Frontend теперь работает полностью в Docker
+### Изменено - Структура проекта и документация
+- **Развертывание Frontend** - Фронтенд теперь полностью работает в Docker
     - Удалена необходимость в ручном запуске `npm run dev`
-    - Frontend автоматически запускается в контейнере на порту 8000
-    - Vite dev server с Hot Module Replacement в Docker
+    - Фронтенд автоматически запускается в контейнере на порту 8000
+    - Vite dev server с Hot Module Replacement (HMR) работает внутри Docker
     - Автоматическая установка зависимостей при старте контейнера
-- **Nginx Reverse Proxy Integration** - Единая точка входа для всех сервисов
+- **Интеграция Nginx Reverse Proxy** - Единая точка входа для всех сервисов
     - Маршрутизация через порт 80 (http://localhost/)
     - Frontend доступен на `/` (проксируется с порта 8000)
     - Backend API на `/api/` (проксируется с порта 8080)
     - Grafana на `/grafana/` (проксируется с порта 3000)
     - Prometheus на `/prometheus/` (проксируется с порта 9090)
-    - Прямой доступ к сервисам на оригинальных портах сохранён для разработки
-- **Simplified Makefile** - Упрощённые команды для работы с проектом
-    - `make start` теперь запускает ВСЕ сервисы включая frontend
-    - Удалены отдельные команды для frontend
-    - Улучшены сообщения о доступных сервисах
-- **Documentation Cleanup** - Очистка от ИИшных комментариев
-    - Удалены избыточные разделители и декоративные линии из конфигураций
-    - Убраны пометки "ДОБАВЛЕНО", "ИЗМЕНЕНО" из кода
-    - Удалены эмодзи из технической документации (кроме заголовков)
-    - Почищены избыточные пояснения в docker-compose.yml, nginx конфигах
-    - Обновлены `.env.example`, `nginx/conf.d/default.conf`
-
-### Fixed
-- **Documentation Updates** - Исправлена устаревшая информация
-    - Обновлена версия Go с 1.25 на 1.24 в README.md
-    - Исправлены порты доступа в документации (добавлен Nginx на 80)
-    - Обновлены инструкции по запуску (нет необходимости запускать frontend отдельно)
+    - Для разработки сохранен прямой доступ к сервисам на оригинальных портах
+- **Упрощенный Makefile** - Оптимизированные команды для работы с проектом
+    - `make start` теперь запускает ВСЕ сервисы, включая frontend
+    - Удалены отдельные команды для запуска frontend
+    - Улучшены сообщения о доступных сервисах в консоли
+    
+### Исправлено
+- **Обновление документации** - Актуализация устаревшей информации
+    - Версия Go обновлена с 1.25 на 1.24 в README.md (актуальная стабильная)
+    - Исправлены порты доступа в документации (добавлен Nginx на 80 порту)
+    - Обновлены инструкции по запуску (убран шаг отдельного запуска frontend)
     - Добавлено описание прямого и проксируемого доступа к сервисам
     - Исправлен URL репозитория в QUICKSTART.md
     - Обновлена информация о структуре проекта
-    - Добавлен раздел о Nginx в инфраструктуре
+    - Добавлен раздел о роли Nginx в инфраструктуре
     - Обновлены разделы "Доступные сервисы" с актуальными портами
 
-### Documentation
-- Обновлён README.md с актуальной архитектурой
-- Обновлён QUICKSTART.md с правильными инструкциями по запуску
+### Документация
+- Обновлён README.md с описанием актуальной архитектуры
+- Обновлён QUICKSTART.md с корректными инструкциями по запуску
 - Добавлено описание работы Nginx reverse proxy
-- Улучшена структура документации с разделением на развёртывание и разработку
-
+- Улучшена структура документации: разделение на развёртывание и разработку
 
 ## [2.1.1] - 2025-12-09
 
-### Added - Cross-Platform Support 🖥️
-- **ActivityWatch Client** - Native Go client for ActivityWatch integration
-    - `cmd/aw-client/main.go` - standalone client for syncing AW data
-    - Fetches events from ActivityWatch API
-    - Sends data to Personal Data Lake API
-    - Support for custom time ranges and API endpoints
-- **Cross-Platform Makefile** - Universal build system for macOS and Linux
-    - Automatic OS detection (Darwin/Linux)
-    - Platform-specific xargs flags
-    - `make build-aw` - build aw-client for current OS
-    - `make run-aw` - sync ActivityWatch data
-    - `make check-aw` - verify ActivityWatch status
-    - `make check-db-aw` - check database statistics
-- **Documentation** - Comprehensive ActivityWatch guide
-    - `docs/ACTIVITYWATCH.md` - installation and usage instructions
-    - Platform-specific installation guides (macOS/Linux)
-    - Troubleshooting section
-    - Automation setup (systemd/launchd/cron)
+### Добавлено - Кроссплатформенная поддержка 🖥️
+- **Клиент ActivityWatch** - Нативный Go-клиент для интеграции с ActivityWatch
+    - `cmd/aw-client/main.go` - автономный клиент для синхронизации данных AW
+    - Получение событий из API ActivityWatch
+    - Отправка данных в API Personal Data Lake
+    - Поддержка настраиваемых временных диапазонов и API эндпоинтов
+- **Кроссплатформенная сборка (Makefile)** - Универсальная система для macOS и Linux
+    - Автоматическое определение ОС (Darwin/Linux)
+    - Специфичные для платформы флаги xargs
+    - `make build-aw` - сборка aw-client для текущей ОС
+    - `make run-aw` - синхронизация данных ActivityWatch
+    - `make check-aw` - проверка статуса ActivityWatch
+    - `make check-db-aw` - проверка статистики базы данных
+- **Документация** - Подробное руководство по ActivityWatch
+    - `docs/ACTIVITYWATCH.md` - инструкции по установке и использованию
+    - Инструкции по установке для конкретных платформ (macOS/Linux)
+    - Раздел устранения неполадок (Troubleshooting)
+    - Настройка автоматизации (systemd/launchd/cron)
 
-### Fixed
-- Code quality improvements in aw-client (handled all defer errors)
-- Makefile now works correctly on macOS (BSD xargs compatibility)
+### Исправлено
+- Улучшения качества кода в aw-client (обработаны все ошибки defer)
+- Makefile теперь корректно работает на macOS (совместимость с BSD xargs)
 
 ## [2.1.0] - 2025-12-09
 
-### Added - Security Features 🔒
-- **Token Encryption** - AES-256-GCM encryption for all OAuth tokens
-    - New `auth/encryption.go` module with AES-GCM implementation
-    - Encrypted storage in `tokens.json` with backward compatibility
-    - `ENCRYPTION_KEY` environment variable (32 bytes required)
-    - `NewFileTokenStorageFromEnv()` helper function
-- **CORS Middleware** - Cross-Origin Resource Sharing protection
-    - Configurable allowed origins via `ALLOWED_ORIGINS` env var
-    - Support for preflight requests (OPTIONS)
-    - Credentials support for authenticated requests
-- **Rate Limiting** - DDoS and brute-force protection
-    - Token bucket algorithm with per-IP limiting
-    - Configurable via `RATE_LIMIT_RPS` and `RATE_LIMIT_BURST`
-    - Automatic cleanup of old limiters
-    - HTTP 429 response for exceeded limits
-- **Docker Security** - Unprivileged container execution
-    - Created `appuser` (UID 1000) in Docker container
-    - Application runs as non-root user
-    - Proper file ownership configuration
-- **Secret Management** - Environment-based configuration
-    - Removed hardcoded API keys from scripts
-    - All secrets via environment variables
-    - `.env.example` with comprehensive documentation
-- **Security Documentation**
-    - New `docs/SECURITY.md` with detailed security guide
-    - Updated README.md with security section
-    - Configuration examples and best practices
+### Добавлено - Функции безопасности
+- **Шифрование токенов** - Шифрование AES-256-GCM для всех токенов OAuth
+    - Новый модуль `auth/encryption.go` с реализацией AES-GCM
+    - Зашифрованное хранение в `tokens.json` с обратной совместимостью
+    - Переменная окружения `ENCRYPTION_KEY` (требуется 32 байта)
+    - Вспомогательная функция `NewFileTokenStorageFromEnv()`
+- **Middleware CORS** - Защита Cross-Origin Resource Sharing
+    - Настраиваемые разрешенные источники через env переменную `ALLOWED_ORIGINS`
+    - Поддержка preflight запросов (OPTIONS)
+    - Поддержка credentials для аутентифицированных запросов
+- **Rate Limiting** - Защита от DDoS и brute-force атак
+    - Алгоритм Token bucket с лимитированием по IP
+    - Настройка через `RATE_LIMIT_RPS` и `RATE_LIMIT_BURST`
+    - Автоматическая очистка старых лимитеров
+    - Ответ HTTP 429 при превышении лимитов
+- **Безопасность Docker** - Запуск контейнера без привилегий
+    - Создан пользователь `appuser` (UID 1000) в Docker контейнере
+    - Приложение запускается от имени не-root пользователя
+    - Настроены правильные права владения файлами
+- **Документация по безопасности**
+    - Новый файл `docs/SECURITY.md` с подробным руководством
+    - Обновлен README.md (добавлен раздел безопасности)
+    - Примеры конфигурации и лучшие практики
 
-### Changed
-- Updated all token storage initialization to use encryption
-- Modified `scripts/generate_traffic.sh` to use env variables
-- Enhanced `Dockerfile` with security best practices
-- Updated middleware stack with CORS and rate limiting
+### Изменено
+- Обновлена инициализация хранилища токенов (теперь используется шифрование)
+- Изменен скрипт `scripts/generate_traffic.sh` для использования переменных окружения
+- Улучшен `Dockerfile` с учетом лучших практик безопасности
+- Обновлен стек middleware: добавлены CORS и rate limiting
 
-### Security
-- Fixed: OAuth tokens stored in plaintext (CVE-worthy)
-- Fixed: Missing CORS configuration
-- Fixed: No rate limiting (DDoS vulnerability)
-- Fixed: Docker container running as root
-- Fixed: Hardcoded secrets in scripts
+### Безопасность (Security)
+- Исправлено: OAuth токены хранились в открытом виде
+- Исправлено: Отсутствовала конфигурация CORS
+- Исправлено: Отсутствовало ограничение частоты запросов
+- Исправлено: Docker контейнер запускался от root
 
-### Dependencies
-- Added `golang.org/x/time/rate` for rate limiting
+### Зависимости
+- Добавлен пакет `golang.org/x/time/rate` для реализации rate limiting
 
 ## [2.0.0] - 2025-12-09
 
-### Added
-- **Modern Web Frontend** built with React 18 + TypeScript
-    - Interactive dashboard with real-time data visualization
-    - Responsive design with TailwindCSS
-    - Smooth animations with Framer Motion
-- **Dashboard Components**
-    - KPI Cards with trend indicators
-    - Productivity Chart (WakaTime coding time visualization)
-    - Health/Activity Chart (Google Fit steps tracking with daily goals)
-    - Language Distribution (Pie chart with percentages)
-    - Top Projects (Bar chart with time breakdown)
-    - Top Applications (ActivityWatch usage statistics)
-    - Schedule Timeline (Google Calendar events)
-- **Advanced Date Range Picker**
-    - Quick presets (Today, Yesterday, Last 7/30 Days, etc.)
-    - Custom date range selection
-    - Current Month and Last Year views
-    - All-time statistics
-- **Smart Data Aggregation**
-    - Daily data for periods ≤ 90 days
-    - Automatic monthly aggregation for periods > 90 days
-    - Optimized performance for large datasets
-- **REST API v1** with dedicated endpoints
-    - `/api/v1/wakatime/stats` - Coding statistics
-    - `/api/v1/googlefit/stats` - Health & fitness data
-    - `/api/v1/googlecalendar/events` - Calendar events
-    - `/api/v1/activitywatch/stats` - Computer activity
-- **Enhanced User Experience**
-    - Loading states and skeletons
-    - Error handling with user-friendly messages
-    - Automatic data refresh
-    - Setup page for OAuth configuration
-    - Auth success page with redirect
-- **Performance Optimizations**
-    - Parallel data fetching with React hooks
-    - Efficient SQL queries with aggregations
-    - Optimized database views
-    - Vite-powered fast development builds
+### Добавлено
+- **Современный веб-интерфейс** на React 18 + TypeScript
+    - Интерактивный дашборд с визуализацией данных в реальном времени
+    - Адаптивный дизайн с использованием TailwindCSS
+    - Плавные анимации с Framer Motion
+- **Компоненты дашборда**
+    - Карточки KPI с индикаторами трендов
+    - График продуктивности (визуализация времени кодинга из WakaTime)
+    - График здоровья/активности (шаги Google Fit с ежедневными целями)
+    - Распределение языков (круговая диаграмма с процентами)
+    - Топ проектов (столбчатая диаграмма с разбивкой по времени)
+    - Топ приложений (статистика использования ActivityWatch)
+    - Таймлайн расписания (события Google Calendar)
+- **Продвинутый выбор диапазона дат**
+    - Быстрые пресеты (Сегодня, Вчера, Последние 7/30 дней и т.д.)
+    - Выбор произвольного диапазона
+    - Просмотр "Текущий месяц" и "Прошлый год"
+    - Статистика за всё время
+- **Умная агрегация данных**
+    - Ежедневные данные для периодов ≤ 90 дней
+    - Автоматическая ежемесячная агрегация для периодов > 90 дней
+    - Оптимизация производительности для больших наборов данных
+- **REST API v1** с выделенными эндпоинтами
+    - `/api/v1/wakatime/stats` - Статистика кодинга
+    - `/api/v1/googlefit/stats` - Данные о здоровье и фитнесе
+    - `/api/v1/googlecalendar/events` - События календаря
+    - `/api/v1/activitywatch/stats` - Активность за компьютером
+- **Улучшенный пользовательский опыт (UX)**
+    - Состояния загрузки и скелетоны (skeletons)
+    - Обработка ошибок с понятными пользователю сообщениями
+    - Автоматическое обновление данных
+    - Страница настройки для конфигурации OAuth
+    - Страница успешной авторизации с редиректом
+- **Оптимизация производительности**
+    - Параллельная загрузка данных с React hooks
+    - Эффективные SQL-запросы с агрегацией
+    - Оптимизированные представления (views) базы данных
+    - Быстрые сборки для разработки на Vite
 
-### Changed
-- Scheduler interval changed from 30 to 10 minutes (configurable)
-- Restructured project with `api/v1` package separation
-- Improved database schema with additional indexes
-- Enhanced API response models with computed fields
-- Updated UI/UX for better data presentation
+### Изменено
+- Интервал планировщика изменен с 30 на 10 минут (настраивается)
+- Реструктуризация проекта с выделением пакета `api/v1`
+- Улучшена схема базы данных (добавлены дополнительные индексы)
+- Расширены модели ответов API (добавлены вычисляемые поля)
+- Обновлен UI/UX для лучшего представления данных
 
-### Improved
-- Comprehensive README with architecture documentation
-- Detailed backend and frontend structure descriptions
-- API documentation with request/response examples
-- Simplified quickstart guide
-- Docker Compose improvements
+### Улучшено
+- Исчерпывающий README с документацией архитектуры
+- Подробное описание структуры бэкенда и фронтенда
+- Документация API с примерами запросов/ответов
+- Упрощенное руководство по быстрому старту (Quickstart)
+- Улучшения в Docker Compose
 
-### Technical
-- **Frontend Stack**
-    - React 18.2 with TypeScript 5.2
-    - Vite 5.0 for blazing-fast builds
-    - Recharts 2.10 for charts
-    - Axios for API communication
-    - date-fns for date manipulation
-    - lucide-react for icons
-- **Backend Enhancements**
-    - Structured API versioning (v1)
-    - Type-safe handlers with proper error handling
-    - Enhanced logging for API requests
-    - CORS configuration for frontend
-
----
+### Техническое
+- **Стек Frontend**
+    - React 18.2 с TypeScript 5.2
+    - Vite 5.0 для молниеносной сборки
+    - Recharts 2.10 для графиков
+    - Axios для взаимодействия с API
+    - date-fns для работы с датами
+    - lucide-react для иконок
+- **Улучшения Backend**
+    - Структурированное версионирование API (v1)
+    - Типизированные хендлеры с правильной обработкой ошибок
+    - Расширенное логирование запросов API
+    - Конфигурация CORS для фронтенда
 
 ## [1.0.0] - 2025-11-04
 
-### Added
-- Initial project setup
-- REST API with endpoints for all data sources
-- **WakaTime integration**
-    - OAuth2 authentication
-    - Data collection and storage
-    - Statistics endpoint
-- **Google Fit integration**
-    - OAuth2 authentication
-    - Steps, calories, distance tracking
-    - Statistics endpoint
-- **Google Calendar integration**
-    - OAuth2 authentication
-    - Event collection and storage
-    - Events endpoint
-- **ActivityWatch integration**
-    - Event submission endpoint
-    - Statistics endpoint
-- **Scheduler** for automatic data collection (every 30 minutes)
-- **API Key authentication middleware**
-- **PostgreSQL database with migrations**
-    - User management
-    - WakaTime data schema
-    - Google Fit data schema
-    - Google Calendar data schema
-    - ActivityWatch data schema
-- **Structured logging** with zerolog
-- **Monitoring stack** (Prometheus + Grafana + Loki)
-    - Pre-configured Grafana dashboard
-    - Prometheus metrics collection
-    - Loki log aggregation
-- **Docker support**
-    - Dockerfile for application
-    - Docker Compose for PostgreSQL
-    - Docker Compose for monitoring stack
-- **SQLC** for type-safe database queries
-- **Environment-based configuration**
-- **SystemD services** for ActivityWatch client
-- **Documentation**
-    - README with setup instructions
-    - API documentation
-    - Contributing guidelines
-    - Project status document
-- **Build tools**
-    - Makefile for common tasks
-    - Setup script for initial configuration
-    - Build scripts for ActivityWatch client
-- **MIT License**
+### Добавлено
+- Начальная настройка проекта
+- REST API с эндпоинтами для всех источников данных
+- **Интеграция с WakaTime**
+    - Аутентификация OAuth2
+    - Сбор и хранение данных
+    - Эндпоинт статистики
+- **Интеграция с Google Fit**
+    - Аутентификация OAuth2
+    - Отслеживание шагов, калорий, дистанции
+    - Эндпоинт статистики
+- **Интеграция с Google Calendar**
+    - Аутентификация OAuth2
+    - Сбор и хранение событий
+    - Эндпоинт событий
+- **Интеграция с ActivityWatch**
+    - Эндпоинт отправки событий
+    - Эндпоинт статистики
+- **Планировщик (Scheduler)** для автоматического сбора данных (каждые 30 минут)
+- **Middleware аутентификации по API Key**
+- **База данных PostgreSQL с миграциями**
+    - Управление пользователями
+    - Схемы данных для WakaTime, Google Fit, Calendar, ActivityWatch
+- **Структурированное логирование** с использованием zerolog
+- **Стек мониторинга** (Prometheus + Grafana + Loki)
+    - Преднастроенный дашборд Grafana
+    - Сбор метрик Prometheus
+    - Агрегация логов Loki
+- **Поддержка Docker**
+    - Dockerfile для приложения
+    - Docker Compose для PostgreSQL
+    - Docker Compose для стека мониторинга
+- **SQLC** для типобезопасных запросов к БД
+- **Конфигурация на основе переменных окружения**
+- **SystemD сервисы** для клиента ActivityWatch
+- **Документация**
+    - README с инструкциями по установке
+    - Документация API
+    - Руководство для контрибьюторов (Contributing)
+    - Документ о статусе проекта
+- **Инструменты сборки**
+    - Makefile для общих задач
+    - Скрипт настройки для первоначальной конфигурации
+    - Скрипты сборки для клиента ActivityWatch
+- **Лицензия MIT**
 
-### Security
-- API Key authentication for all endpoints
-- OAuth2 tokens stored securely in `tokens.json`
-- Sensitive data excluded from git (`.gitignore`)
-- Constant-time comparison for API keys
+### Безопасность
+- Аутентификация по API Key для всех эндпоинтов
+- Безопасное хранение токенов OAuth2 в `tokens.json`
+- Исключение чувствительных данных из git (`.gitignore`)
+- Сравнение API ключей за константное время (Constant-time comparison)
 
 ---
 
-## Historical Releases
-- **2.0.0** — Major update with web frontend
-- **1.0.0** — First public release candidate
-
+## История релизов
+- **2.0.0** — Крупное обновление с веб-интерфейсом
+- **1.0.0** — Первый публичный релиз-кандидат
