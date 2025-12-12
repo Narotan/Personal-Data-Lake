@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "🗃️  Initializing database schema..."
+echo "Initializing database schema..."
 
 # Run all migration files in order
 for migration in /docker-entrypoint-initdb.d/migrations/*.up.sql; do
@@ -19,8 +19,8 @@ if [ ! -z "$API_USER_ID" ]; then
         VALUES ('$API_USER_ID', 'default_user', 'user@example.com')
         ON CONFLICT (id) DO NOTHING;
 EOSQL
-    echo "✅ Default user created or already exists"
+    echo "Default user created or already exists"
 fi
 
-echo "✅ Database initialization complete!"
+echo "Database initialization complete"
 

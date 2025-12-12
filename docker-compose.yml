@@ -1,4 +1,3 @@
-
 services:
   # PostgreSQL Database
   postgres:
@@ -22,7 +21,7 @@ services:
       timeout: 5s
       retries: 5
 
-  # Data Lake Application
+  # Backend Application (Go)
   app:
     build:
       context: .
@@ -47,7 +46,39 @@ services:
       retries: 3
       start_period: 40s
 
-  # Prometheus
+  # Frontend Application (React/Vite)
+  frontend:
+    image: node:20-alpine
+    container_name: datalake_frontend
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ./web:/app
+      - /app/node_modules
+    ports:
+      - "8000:8000"
+    command: sh -c "npm install && npm run dev -- --host"
+    environment:
+      - VITE_API_URL=http://localhost:8080
+      - CHOKIDAR_USEPOLLING=true
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: datalake_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+    depends_on:
+      - frontend
+      - app
+      - grafana
+      - prometheus
+
+  # Monitoring Stack
   prometheus:
     image: prom/prometheus:latest
     container_name: datalake_prometheus
@@ -61,8 +92,9 @@ services:
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
+      - '--web.external-url=http://localhost/prometheus/'
+      - '--web.route-prefix=/'
 
-  # Grafana
   grafana:
     image: grafana/grafana:latest
     container_name: datalake_grafana
@@ -75,6 +107,8 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_USERS_ALLOW_SIGN_UP=false
       - GF_INSTALL_PLUGINS=marcusolsson-json-datasource
+      - GF_SERVER_ROOT_URL=http://localhost/grafana/
+      - GF_SERVER_SERVE_FROM_SUB_PATH=true
     volumes:
       - grafana_data:/var/lib/grafana
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
@@ -82,7 +116,6 @@ services:
     depends_on:
       - prometheus
 
-  # Loki (Log aggregation)
   loki:
     image: grafana/loki:latest
     container_name: datalake_loki
@@ -95,7 +128,6 @@ services:
       - loki_data:/loki
     command: -config.file=/etc/loki/local-config.yaml
 
-  # Promtail (Log shipper)
   promtail:
     image: grafana/promtail:latest
     container_name: datalake_promtail
@@ -117,4 +149,3 @@ volumes:
     driver: local
   loki_data:
     driver: local
-

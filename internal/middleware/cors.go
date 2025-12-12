@@ -13,7 +13,7 @@ func CORS(next http.Handler) http.Handler {
 		allowedOrigins := os.Getenv("ALLOWED_ORIGINS")
 		if allowedOrigins == "" {
 			// По умолчанию разрешаем только localhost для разработки
-			allowedOrigins = "http://localhost:8000,http://localhost:5173"
+			allowedOrigins = "http://localhost:8000,http://localhost"
 		}
 
 		origin := r.Header.Get("Origin")

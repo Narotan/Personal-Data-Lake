@@ -43,7 +43,7 @@ func FetchSummaries() ([]DailySummary, error) {
 	}
 
 	end := time.Now().UTC()
-	startDate := end.AddDate(0, 0, -7)
+	startDate := end.AddDate(0, 0, -6)
 
 	url := fmt.Sprintf(
 		"https://wakatime.com/api/v1/users/current/summaries?start=%s&end=%s",

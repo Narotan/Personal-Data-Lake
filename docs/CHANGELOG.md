@@ -6,6 +6,75 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [2.2.0] - 2025-12-12
+
+### Changed - Project Structure & Documentation Updates
+- **Frontend Deployment** - Frontend теперь работает полностью в Docker
+    - Удалена необходимость в ручном запуске `npm run dev`
+    - Frontend автоматически запускается в контейнере на порту 8000
+    - Vite dev server с Hot Module Replacement в Docker
+    - Автоматическая установка зависимостей при старте контейнера
+- **Nginx Reverse Proxy Integration** - Единая точка входа для всех сервисов
+    - Маршрутизация через порт 80 (http://localhost/)
+    - Frontend доступен на `/` (проксируется с порта 8000)
+    - Backend API на `/api/` (проксируется с порта 8080)
+    - Grafana на `/grafana/` (проксируется с порта 3000)
+    - Prometheus на `/prometheus/` (проксируется с порта 9090)
+    - Прямой доступ к сервисам на оригинальных портах сохранён для разработки
+- **Simplified Makefile** - Упрощённые команды для работы с проектом
+    - `make start` теперь запускает ВСЕ сервисы включая frontend
+    - Удалены отдельные команды для frontend
+    - Улучшены сообщения о доступных сервисах
+- **Documentation Cleanup** - Очистка от ИИшных комментариев
+    - Удалены избыточные разделители и декоративные линии из конфигураций
+    - Убраны пометки "ДОБАВЛЕНО", "ИЗМЕНЕНО" из кода
+    - Удалены эмодзи из технической документации (кроме заголовков)
+    - Почищены избыточные пояснения в docker-compose.yml, nginx конфигах
+    - Обновлены `.env.example`, `nginx/conf.d/default.conf`
+
+### Fixed
+- **Documentation Updates** - Исправлена устаревшая информация
+    - Обновлена версия Go с 1.25 на 1.24 в README.md
+    - Исправлены порты доступа в документации (добавлен Nginx на 80)
+    - Обновлены инструкции по запуску (нет необходимости запускать frontend отдельно)
+    - Добавлено описание прямого и проксируемого доступа к сервисам
+    - Исправлен URL репозитория в QUICKSTART.md
+    - Обновлена информация о структуре проекта
+    - Добавлен раздел о Nginx в инфраструктуре
+    - Обновлены разделы "Доступные сервисы" с актуальными портами
+
+### Documentation
+- Обновлён README.md с актуальной архитектурой
+- Обновлён QUICKSTART.md с правильными инструкциями по запуску
+- Добавлено описание работы Nginx reverse proxy
+- Улучшена структура документации с разделением на развёртывание и разработку
+
+
+## [2.1.1] - 2025-12-09
+
+### Added - Cross-Platform Support 🖥️
+- **ActivityWatch Client** - Native Go client for ActivityWatch integration
+    - `cmd/aw-client/main.go` - standalone client for syncing AW data
+    - Fetches events from ActivityWatch API
+    - Sends data to Personal Data Lake API
+    - Support for custom time ranges and API endpoints
+- **Cross-Platform Makefile** - Universal build system for macOS and Linux
+    - Automatic OS detection (Darwin/Linux)
+    - Platform-specific xargs flags
+    - `make build-aw` - build aw-client for current OS
+    - `make run-aw` - sync ActivityWatch data
+    - `make check-aw` - verify ActivityWatch status
+    - `make check-db-aw` - check database statistics
+- **Documentation** - Comprehensive ActivityWatch guide
+    - `docs/ACTIVITYWATCH.md` - installation and usage instructions
+    - Platform-specific installation guides (macOS/Linux)
+    - Troubleshooting section
+    - Automation setup (systemd/launchd/cron)
+
+### Fixed
+- Code quality improvements in aw-client (handled all defer errors)
+- Makefile now works correctly on macOS (BSD xargs compatibility)
+
 ## [2.1.0] - 2025-12-09
 
 ### Added - Security Features 🔒

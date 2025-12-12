@@ -13,7 +13,6 @@ FROM alpine:latest
 
 RUN apk --no-cache add ca-certificates tzdata wget postgresql-client
 
-# Создаем непривилегированного пользователя
 RUN addgroup -g 1000 appgroup && \
     adduser -D -u 1000 -G appgroup appuser
 
@@ -22,13 +21,10 @@ WORKDIR /app
 COPY --from=builder /build/data-lake .
 COPY db/migrations /app/migrations
 
-# Меняем владельца файлов на appuser
 RUN chown -R appuser:appgroup /app
 
-# Переключаемся на непривилегированного пользователя
 USER appuser
 
 EXPOSE 8080
 
 CMD ["./data-lake"]
-р

@@ -12,9 +12,18 @@ export default defineConfig({
   },
   server: {
     port: 8000,
+    host: '0.0.0.0',
+    strictPort: true,
+    hmr: {
+      clientPort: 80,
+      host: 'localhost',
+    },
+    watch: {
+      usePolling: true,
+    },
     proxy: {
       '/api': {
-        target: 'http://localhost:8080',
+        target: 'http://app:8080',
         changeOrigin: true,
         secure: false,
       }

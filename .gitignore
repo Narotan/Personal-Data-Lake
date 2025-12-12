@@ -24,6 +24,8 @@ go.work
 # Logs
 *.log
 logs/
+nginx/logs/
+/var/log/nginx/
 
 # Configuration and secrets
 .env
