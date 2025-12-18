@@ -18,38 +18,6 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-// printAuthorizationBanner выводит баннер с ссылками на авторизацию
-func printAuthorizationBanner(wakatimeURL, googleFitURL, googleCalendarURL string) {
-	banner := `
-================================================================================
-                  PERSONAL DATA LAKE - OAUTH SETUP
-================================================================================
-
-To start collecting your personal data, please authorize the following services:
-
---------------------------------------------------------------------------------
-WakaTime (Coding Activity)
---------------------------------------------------------------------------------
-%s
-
---------------------------------------------------------------------------------
-Google Fit (Health & Activity)
---------------------------------------------------------------------------------
-%s
-
---------------------------------------------------------------------------------
-Google Calendar (Events & Meetings)
---------------------------------------------------------------------------------
-%s
-
-Tip: Copy each URL and paste it into your browser to complete authorization.
-     After authorization, the system will automatically start collecting data.
-
-================================================================================
-`
-	fmt.Printf(banner, wakatimeURL, googleFitURL, googleCalendarURL)
-}
-
 func main() {
 	environment := os.Getenv("ENVIRONMENT")
 	if environment == "" {
@@ -83,13 +51,6 @@ func main() {
 	// Инициализация всех провайдеров OAuth
 	googleFitProvider := googlefitauth.NewProviderFromEnv()
 	googleCalendarProvider := googlecalendarauth.NewProviderFromEnv()
-
-	// Красивый вывод авторизационных ссылок
-	printAuthorizationBanner(
-		wakatimeProvider.GetAuthURL("wakatime"),
-		googleFitProvider.GetAuthURL("googlefit"),
-		googleCalendarProvider.GetAuthURL("googlecalendar"),
-	)
 
 	// Создаем userID для scheduler
 	userIDStr := os.Getenv("API_USER_ID")
