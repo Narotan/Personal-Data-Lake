@@ -18,6 +18,37 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
+func printAuthorizationBanner(wakatimeURL, googleFitURL, googleCalendarURL string) {
+	banner := `
+================================================================================
+                  PERSONAL DATA LAKE - OAUTH SETUP
+================================================================================
+
+To start collecting your personal data, please authorize the following services:
+
+--------------------------------------------------------------------------------
+WakaTime (Coding Activity)
+--------------------------------------------------------------------------------
+%s
+
+--------------------------------------------------------------------------------
+Google Fit (Health & Activity)
+--------------------------------------------------------------------------------
+%s
+
+--------------------------------------------------------------------------------
+Google Calendar (Events & Meetings)
+--------------------------------------------------------------------------------
+%s
+
+Tip: Copy each URL and paste it into your browser to complete authorization.
+     After authorization, the system will automatically start collecting data.
+
+================================================================================
+`
+	fmt.Printf(banner, wakatimeURL, googleFitURL, googleCalendarURL)
+}
+
 func main() {
 	environment := os.Getenv("ENVIRONMENT")
 	if environment == "" {
@@ -29,7 +60,6 @@ func main() {
 
 	log := logger.Get()
 
-	// Load .env only in development
 	if environment == "development" {
 		if err := godotenv.Load(); err != nil {
 			log.Warn().Err(err).Msg("no .env file found, using environment variables")
@@ -52,7 +82,12 @@ func main() {
 	googleFitProvider := googlefitauth.NewProviderFromEnv()
 	googleCalendarProvider := googlecalendarauth.NewProviderFromEnv()
 
-	// Создаем userID для scheduler
+	printAuthorizationBanner(
+		wakatimeProvider.GetAuthURL("wakatime"),
+		googleFitProvider.GetAuthURL("googlefit"),
+		googleCalendarProvider.GetAuthURL("googlecalendar"),
+	)
+
 	userIDStr := os.Getenv("API_USER_ID")
 	if userIDStr == "" {
 		log.Fatal().Msg("API_USER_ID environment variable not set")
@@ -62,7 +97,6 @@ func main() {
 		log.Fatal().Err(err).Msg("Invalid API_USER_ID format")
 	}
 
-	// Запускаем scheduler в отдельной goroutine, если включено
 	if os.Getenv("ENABLE_SCHEDULER") == "true" {
 		sched := scheduler.NewScheduler(store, &log, userID)
 		go sched.Start()
@@ -71,7 +105,6 @@ func main() {
 		log.Info().Msg("Scheduler is disabled")
 	}
 
-	// Запускаем сервер
 	srv := server.NewServer(store)
 
 	if err := srv.Run(); err != nil {
